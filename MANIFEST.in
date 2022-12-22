@@ -1,0 +1,5 @@
+include CODE_OF_CONDUCT.md
+
+global-exclude *.py[cod] __pycache__ *.so
+
+include pipeline/pyBRAvo/src/*.gene_info

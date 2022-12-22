@@ -1,0 +1,49 @@
+
+PREFIX bp: <http://www.biopax.org/release/biopax-level3.owl#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+
+SELECT DISTINCT ?controllerName ?controlType ?controlledName ?source WHERE {
+    VALUES ?controlledName { 
+"JUN/FOS"^^xsd:string "JUN"^^xsd:string "FOS"^^xsd:string "AP-1"^^xsd:string "AP1"^^xsd:string "c-Jun"^^xsd:string "p39"^^xsd:string "C-FOS"^^xsd:string "p55"^^xsd:string "JUN/FOS mRna"^^xsd:string "expression of JUN/FOS mRna"^^xsd:string "JUN/FOS protein"^^xsd:string "JUN/FOS mRNA"^^xsd:string "expression of JUN/FOS mRNA"^^xsd:string "JUN/FOS mutant form"^^xsd:string "JUN/FOS complex"^^xsd:string "JUN/FOS modified form"^^xsd:string "JUN/FOS protein complex"^^xsd:string "JUN/FOS gene"^^xsd:string "JUN/FOS tetramer"^^xsd:string "JUN mRna"^^xsd:string "expression of JUN mRna"^^xsd:string "JUN protein"^^xsd:string "JUN mRNA"^^xsd:string "expression of JUN mRNA"^^xsd:string "JUN mutant form"^^xsd:string "JUN complex"^^xsd:string "JUN modified form"^^xsd:string "JUN protein complex"^^xsd:string "JUN gene"^^xsd:string "JUN tetramer"^^xsd:string "FOS mRna"^^xsd:string "expression of FOS mRna"^^xsd:string "FOS protein"^^xsd:string "FOS mRNA"^^xsd:string "expression of FOS mRNA"^^xsd:string "FOS mutant form"^^xsd:string "FOS complex"^^xsd:string "FOS modified form"^^xsd:string "FOS protein complex"^^xsd:string "FOS gene"^^xsd:string "FOS tetramer"^^xsd:string "AP-1 mRna"^^xsd:string "expression of AP-1 mRna"^^xsd:string "AP-1 protein"^^xsd:string "AP-1 mRNA"^^xsd:string "expression of AP-1 mRNA"^^xsd:string "AP-1 mutant form"^^xsd:string "AP-1 complex"^^xsd:string "AP-1 modified form"^^xsd:string } .
+    FILTER( str(?controllerType) != "http://www.biopax.org/release/biopax-level3.owl#SmallMolecule" and str(?controlledType) != "http://www.biopax.org/release/biopax-level3.owl#SmallMolecule")  .
+    FILTER ( 
+    (str(lcase(?source)) = "bind" ) || 
+    (str(lcase(?source)) = "biogrid" ) || 
+    (str(lcase(?source)) = "corum" ) || 
+    (str(lcase(?source)) = "dip" ) || 
+    (str(lcase(?source)) = "drugbank" ) || 
+    (str(lcase(?source)) = "hprd" ) || 
+    (str(lcase(?source)) = "humancyc" ) || 
+    (str(lcase(?source)) = "inoh" ) || 
+    (str(lcase(?source)) = "intact" ) || 
+    (str(lcase(?source)) = "kegg" ) || 
+    (str(lcase(?source)) = "netpath" ) || 
+    (str(lcase(?source)) = "panther" ) || 
+    (str(lcase(?source)) = "pid" ) || 
+    (str(lcase(?source)) = "psp" ) || 
+    (str(lcase(?source)) = "reactome" ) || 
+    (str(lcase(?source)) = "reconx" ) || 
+    (str(lcase(?source)) = "smpdb" ) || 
+    (str(lcase(?source)) = "wp" ) || 
+    (str(lcase(?source)) = "intact_complex" ) || 
+    (str(lcase(?source)) = "reach" ) || 
+    (str(lcase(?source)) = "wikipathways" ) 
+) .
+    FILTER( ?controlType = "ACTIVATION"^^xsd:string || ?controlType = "INHIBITION"^^xsd:string)
+
+    ?participant bp:displayName ?controlledName . 
+    ?participant rdf:type ?controlledType .  
+
+    ?controller bp:displayName ?controllerName . 
+    ?controller rdf:type ?controllerType . 
+
+    ?controlled bp:participant ?participant . 
+
+    ?tempReac a bp:TemplateReactionRegulation ; 
+        bp:controlled ?controlled ; 
+        bp:controller ?controller ;  
+        bp:dataSource/bp:displayName ?source . 
+    
+    OPTIONAL {?tempReac bp:controlType ?controlType}
+}
