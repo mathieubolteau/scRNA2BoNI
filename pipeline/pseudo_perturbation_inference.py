@@ -33,17 +33,7 @@ def run_pseudo_perturbation_inference(config):
     problem_instance = "./pipeline/data/problem.lp"
     timeout = config['timeout'] if config['timeout'] != '' else 0
 
-    gringo_cmd = f'gringo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {problem_instance}'
-    print(f'CMD:  {gringo_cmd}')
-    
-    grounding_output = os.popen(gringo_cmd).read()
-    grounding_filename = f'{out_dir}/grounding_output.txt'
-    with open(grounding_filename, 'w') as f:
-        f.write(grounding_output)
-
-    solving_cmd = f'clasp --time-limit={timeout} {grounding_filename}'
-    print(f'CMD:  {solving_cmd}')
-    solving_output = os.popen(solving_cmd).read()
-    with open(f'{out_dir}/solving_output.txt', 'w') as f:
-        f.write(solving_output)
-    
+    cmd = f'clingo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {problem_instance}'
+    print(f'CMD:  {cmd}')
+    clingo_output = os.popen(cmd).read()
+    print(clingo_output)
