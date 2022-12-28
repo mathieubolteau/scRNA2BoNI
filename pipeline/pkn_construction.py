@@ -28,18 +28,18 @@ def format_args(args:dict) -> dict:
     formated_args = dict()
     formated_args['f'] = args['inputs_genes_file']
     formated_args['reg'] = True if args['reconstruction_type']=='regulation' else False
-    formated_args['sig'] = True if args['reconstruction_type']=='signalisation' else False
+    formated_args['sig'] = True if args['reconstruction_type']=='signaling' else False
     formated_args['md'] = int(args['max_depth'])
     formated_args['endpoint'] = args['endpoint']
     formated_args['excl'] = str()
     # for db in args['exclude_databases']:
         # formated_args['excl'] += f'{db.lower()} '
     formated_args['excl'] = args['exclude_databases']
-    if args['extend_with_synonyms'] : formated_args['s'] = True
-    if args['extend_with_rna_protein_suffixes'] : formated_args['su'] = True
-    if args['decompose_complexes'] : formated_args['c'] = True
-    if args['unknown'] : formated_args['unk'] = True
-    if args['fast'] : formated_args['fast'] = True
+    formated_args['s'] = True if args['extend_with_synonyms'] else False
+    formated_args['su'] = True if args['extend_with_rna_protein_suffixes'] else False
+    formated_args['c'] = True if args['decompose_complexes'] else False
+    formated_args['unk'] = True if args['unknown'] else False
+    formated_args['fast'] = True if args['fast'] else False
     formated_args['o'] = output_dir_for_pybravo(args['output_dir'])
     # None used pyBRAvo params
     formated_args['sigd'] = False

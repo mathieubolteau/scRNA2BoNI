@@ -18,6 +18,7 @@ try:
     from . import pkn_analyze
     from . import asp_analyze
     from . import pseudo_perturbation_inference
+    from . import bns_inference
 
 except ImportError as E:
     print(E)
@@ -113,22 +114,22 @@ def run():
     args = pipeline_parser.parse_args()
     config_parser = config_file_parser(args.configuration_file)
     config = check_config_file(config_parser)
-    out_dir = config['output_dir']
+    out_path = config['output_dir']
+    out_dir = os.path.basename(os.path.normpath(out_path))
     
     # Create output directory
-    if not os.path.isdir(out_dir):
-        os.mkdir(out_dir)
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
 
     # PKN construction
     if args.pkn_construction:
         pkn_construction.run_pybravo(args=config)
-        sif_file = f"{out_dir}/{out_dir}-unified.sif"
-        out_dir = f"{out_dir}"
+        sif_file = f"{out_path}/{out_dir}-unified.sif"
         gene_expr_mtx_file = config['matrix_path']
         input_genes_file = config['inputs_genes_file']
         annotation_len = config['annotation_len']
-        pkn_analyze.run_pkn_analyze(sif_file, out_dir, gene_expr_mtx_file, input_genes_file, annotation_len)
-        asp_analyze.run_asp_analyze(sif_file, gene_expr_mtx_file, out_dir)
+        pkn_analyze.run_pkn_analyze(sif_file, out_path, gene_expr_mtx_file, input_genes_file, annotation_len)
+        asp_analyze.run_asp_analyze(sif_file, gene_expr_mtx_file, out_path)
 
     # Preprocessing step, considering that data from PKN construction are available
     # TODO: check that the PKN construction step is done before this step.
@@ -141,7 +142,7 @@ def run():
 
     # BNs inference step
     if args.bns_inference:
-        pass
+        bns_inference.run_bns_inference(config)
 
 
 
