@@ -33,7 +33,7 @@ def run_pseudo_perturbation_inference(config):
     problem_instance = "./pipeline/data/problem.lp"
     timeout = config['timeout'] if config['timeout'] != '' else 0
 
-    cmd = f'clingo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {problem_instance}'
+    cmd = f'clingo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {problem_instance} > {out_dir}/pseudo_perturbation_answer_sets.txt'
     print(f'CMD:  {cmd}')
     clingo_output = os.popen(cmd).read()
     print(clingo_output)
