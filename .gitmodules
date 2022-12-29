@@ -1,0 +1,6 @@
+[submodule "pipeline/caspo"]
+	path = pipeline/caspo
+	url = git@github.com:mathieubolteau/caspo.git
+[submodule "pipeline/pyBRAvo"]
+	path = pipeline/pyBRAvo
+	url = git@github.com:mathieubolteau/pyBRAvo.git
