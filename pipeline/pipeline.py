@@ -76,8 +76,22 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
         config['timeout'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'timeout')
         if config['gene_inputs_pourcentage'] < 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect timeout. See configuration file.')
-        
-        
+
+        config['fit'] = config_parser.getfloat('BNS_INFERENCE', 'fit')
+        if config['fit'] < 0:
+            raise ValueError('Configuration file -- [BNS_INFERENCE] : Incorrect fit value. See configuration file.')
+        config['size'] = config_parser.getint('BNS_INFERENCE', 'size')
+        if config['size'] < 0:
+            raise ValueError('Configuration file -- [BNS_INFERENCE] : Incorrect size value. See configuration file.')
+        config['length'] = config_parser.getint('BNS_INFERENCE', 'length')
+        if config['length'] < 0:
+            raise ValueError('Configuration file -- [BNS_INFERENCE] : Incorrect length value. See configuration file.')
+        config['optimum'] = config_parser.getint('BNS_INFERENCE', 'optimum')
+        if config['optimum'] < 0:
+            raise ValueError('Configuration file -- [BNS_INFERENCE] : Incorrect optimum value. See configuration file.')
+        config['sample'] = config_parser.getint('BNS_INFERENCE', 'sample')
+        if config['sample'] < -1:
+            raise ValueError('Configuration file -- [BNS_INFERENCE] : Incorrect sample value. See configuration file.')
         return config
 
     except configparser.NoOptionError as E:
@@ -143,6 +157,8 @@ def run():
     # BNs inference step
     if args.bns_inference:
         bns_inference.run_bns_inference(config)
+
+        
 
 
 
