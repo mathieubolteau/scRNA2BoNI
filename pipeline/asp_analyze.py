@@ -4,6 +4,7 @@ import csv
 import clyngor
 import json
 import os
+import pkg_resources
 
 def sif2lp(path):
     encoding = ''
@@ -21,21 +22,24 @@ def to_file(str, outname):
 
 
 def get_no_predecessors(encoding):
-    answers = clyngor.solve('/home/e21g017n/Nextcloud/work/pkn_construction/encodings/get_no_predecessors.lp', inline=encoding)
+    instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_no_predecessors.lp')
+    answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate.first_arg_only:
         no_predecessors = list(answer['no_predecessor'])
         no_predecessors = [x.replace('"','') for x in no_predecessors]
         return no_predecessors
 
 def get_no_successors(encoding):
-    answers = clyngor.solve('/home/e21g017n/Nextcloud/work/pkn_construction/encodings/get_no_successors.lp', inline=encoding)
+    instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_no_successors.lp')
+    answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate.first_arg_only:
         no_successors = list(answer['no_successor'])
         no_successors = [x.replace('"','') for x in no_successors]
         return no_successors
 
 def get_nodes(encoding):
-    answers = clyngor.solve('/home/e21g017n/Nextcloud/work/pkn_construction/encodings/get_nodes.lp', inline=encoding)
+    instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_nodes.lp')
+    answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate.first_arg_only:
         nodes = list(answer['node'])
         nodes = [x.replace('"','') for x in nodes]
@@ -46,7 +50,8 @@ def count_nb_edges(encoding):
     return len(encoding.split('\n'))
 
 def count_edges_type(encoding):
-    answers = clyngor.solve('/home/e21g017n/Nextcloud/work/pkn_construction/encodings/count_edges_type.lp', inline=encoding)
+    instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/count_edges_type.lp')
+    answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate:
         edges_type = dict()
         for tuple_ in answer['nb']:
