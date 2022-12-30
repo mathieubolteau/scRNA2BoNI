@@ -6,5 +6,4 @@ setup(
               'pipeline=pipeline.pipeline:run',
           ]
       },
-    include_package_data=True
 )
