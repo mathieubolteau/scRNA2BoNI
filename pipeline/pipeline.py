@@ -41,7 +41,7 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
         config['matrix_path'] = config_parser.get('DATA','matrix_path')
         if config['matrix_path'] == '':
             raise ValueError('Configuration file -- [DATA] : Expression matrix path if mandatory. See configuration file.')
-        config['annotation_len'] = config_parser.getint('DATA','annotation_len')
+        config['annotation_len'] = config_parser.getint('DATA','annotation_len')-1 # -1 to deal with the index start of dataframe equal to 0
         if config['annotation_len'] < 0:
             raise ValueError('Configuration file -- [DATA] : Incorrect annotation len. See configuration file.')
         config['class_types'] = config_parser.get('DATA', 'class_types').split(',') 
@@ -128,22 +128,23 @@ def run():
     args = pipeline_parser.parse_args()
     config_parser = config_file_parser(args.configuration_file)
     config = check_config_file(config_parser)
-    out_path = config['output_dir']
-    out_dir = os.path.basename(os.path.normpath(out_path))
+    out_dir_path = config['output_dir']
+    out_dir_name = os.path.basename(os.path.normpath(out_dir_path))
     
     # Create output directory
-    if not os.path.isdir(out_path):
-        os.mkdir(out_path)
+    if not os.path.isdir(out_dir_path):
+        os.mkdir(out_dir_path)
 
     # PKN construction
     if args.pkn_construction:
         pkn_construction.run_pybravo(args=config)
-        sif_file = f"{out_path}/{out_dir}-unified.sif"
+        sif_file = f"{out_dir_path}/{out_dir_name}-unified.sif"
+        modified_sif_file = f"{out_dir_path}/reduced_pkn.sif"
         gene_expr_mtx_file = config['matrix_path']
         input_genes_file = config['inputs_genes_file']
         annotation_len = config['annotation_len']
-        pkn_analyze.run_pkn_analyze(sif_file, out_path, gene_expr_mtx_file, input_genes_file, annotation_len)
-        asp_analyze.run_asp_analyze(sif_file, gene_expr_mtx_file, out_path)
+        pkn_analyze.run_pkn_analyze(sif_file, out_dir_path, gene_expr_mtx_file, input_genes_file, annotation_len)
+        asp_analyze.run_asp_analyze(modified_sif_file, gene_expr_mtx_file, out_dir_path)
 
     # Preprocessing step, considering that data from PKN construction are available
     # TODO: check that the PKN construction step is done before this step.

@@ -8,7 +8,7 @@ from sys import argv
 import networkx as nx 
 import re
 
-from .utils import index_syn, init_gene_synonyms_cache, read_file
+from .utils import index_syn, init_gene_synonyms_cache, read_file, save_to_file, load_data
 
 def SIF_to_digraph(filename:str) -> nx.DiGraph:
     G = nx.Digraph()
@@ -39,20 +39,12 @@ def get_genes(sif_file):
             if row[2] not in genes_list: genes_list.append(row[2])
     return (raw_data, genes_list)
     
-def load_data(filename):
-    return pd.read_csv(filename)
 
 
 
 
 def fast_are_synonyms(n, m, index_syn):
-    """
 
-    :param n:
-    :param m:
-    :param index_syn:
-    :return:
-    """
     try:
         index_syn[n]
     except:
@@ -69,6 +61,46 @@ def replace_in_sif(old_gene:str, new_gene:str, sif_content:str):
         sif_content = re.sub(r"\t"+old_gene+"$", r"\t"+new_gene, sif_content, flags=re.MULTILINE)
         # sif_content = sif_content.replace('\t'+old_gene, '\t'+new_gene)
         return sif_content
+
+def read_sif(sif:str) -> list:
+    edges = list()
+    sif_content_list = sif.split("\n")
+    # Remove last empty line
+    sif_content_list = list(filter(None, sif_content_list))
+    for edge in sif_content_list:
+        source, sign, target = edge.split("\t")
+        edges.append((source, target, {'sign': sign}))
+    return edges
+
+def reduce_pkn(pkn_content:str, matrix_genes:list) -> str:
+    reduced_pkn_content = str()
+    graph = nx.DiGraph(read_sif(pkn_content))
+    nodes = graph.nodes
+    to_keep = [n for n in nodes if n in matrix_genes]
+    complexes = list()
+    for in_, out, sign in graph.edges.data('sign'):
+        if sign == 'PART_OF':
+            for succ in graph.successors(out):
+                if succ in to_keep:
+                    complexes.append(out) 
+    reduced_graph = graph.subgraph(to_keep+complexes)
+    reduced_graph_copy = reduced_graph.copy()
+   
+    inputs_with_one_succ = [node for node in reduced_graph if reduced_graph.in_degree(node) == 0 and reduced_graph.out_degree(node) == 1]
+    readouts = [node for node in reduced_graph if reduced_graph.out_degree(node) == 0]
+    deleted_inputs = list()
+    for node in inputs_with_one_succ:
+        succesor = next(reduced_graph.successors(node))
+        if succesor in readouts: 
+            deleted_inputs.append(node)
+            reduced_graph_copy.remove_node(node)
+
+    # reduced_graph = graph.subgraph(to_keep)
+    for in_, out, sign in reduced_graph_copy.edges.data('sign'):
+        # _,_,sign = reduced_graph_copy.edges[in_, out]['sign']
+        reduced_pkn_content += f'{in_}\t{sign}\t{out}\n'
+    return reduced_pkn_content, deleted_inputs
+
 
 
 
@@ -93,12 +125,13 @@ def reduce_expr_matrix(gene_expr_mtx_file: pd.DataFrame, genes_list:list, sif_co
     modifications = {'pkn_name':[],
                     'matrix_name':[],
                     'new_pkn_name':[]}
-    expr_mtx = load_data(gene_expr_mtx_file)
+    expr_mtx = load_data(gene_expr_mtx_file, index_name='Name')
     expr_mtx_genes = expr_mtx.columns
     to_keep = list()
     almost_in_expr_mtx = list()
     not_in_expr_mtx = list()
     perfect_matchs = list()
+    modified_sif_content = sif_content
 
     for gene in genes_list:
         almost = False
@@ -115,7 +148,7 @@ def reduce_expr_matrix(gene_expr_mtx_file: pd.DataFrame, genes_list:list, sif_co
                 modifications['matrix_name'].append(g)
                 modifications['new_pkn_name'].append(gene+'__['+g+']')
                 present = True
-                sif_content = replace_in_sif(gene, g, sif_content)
+                modified_sif_content = replace_in_sif(gene, g, modified_sif_content)
                 break
             else:
                 if fast_are_synonyms(g, gene, index_syn):
@@ -124,7 +157,7 @@ def reduce_expr_matrix(gene_expr_mtx_file: pd.DataFrame, genes_list:list, sif_co
                     modifications['matrix_name'].append(g)
                     modifications['new_pkn_name'].append(gene+'__['+g+']')
                     present = True
-                    sif_content = replace_in_sif(gene, g, sif_content)
+                    modified_sif_content = replace_in_sif(gene, g, modified_sif_content)
                     break
 
                 elif g.lower() in gene.lower():
@@ -140,11 +173,10 @@ def reduce_expr_matrix(gene_expr_mtx_file: pd.DataFrame, genes_list:list, sif_co
     annotation_columns = list(expr_mtx.columns[:annotation_len])
     to_keep = annotation_columns+to_keep
     reduced_expr_mtx = expr_mtx[to_keep]
-    reduced_expr_mtx = reduced_expr_mtx.set_index('Name')
-    to_keep = annotation_columns+perfect_matchs
-    perfect_matchs_reduced_mtx = expr_mtx[to_keep]
-    perfect_matchs_reduced_mtx = perfect_matchs_reduced_mtx.set_index('Name')
-    return (reduced_expr_mtx, not_in_expr_mtx, almost_in_expr_mtx, modifications, sif_content, perfect_matchs_reduced_mtx)
+    # to_keep = annotation_columns+perfect_matchs
+    # perfect_matchs_reduced_mtx = expr_mtx[to_keep]
+    # perfect_matchs_reduced_mtx = perfect_matchs_reduced_mtx.set_index('Name')
+    return (reduced_expr_mtx, not_in_expr_mtx, almost_in_expr_mtx, modifications, modified_sif_content)
 
 
 def plot(data, out_dir):
@@ -175,7 +207,6 @@ def plot(data, out_dir):
 
     stop = 0
     for gene in data.columns[5:]: # Skip the 5 firsts columns to have only genes
-        print('--- '+gene)
     # for gene in WGCNA_GS_LIST:
         # if stop==10:
         #     break
@@ -307,6 +338,13 @@ def get_input_genes_not_in_the_pkn(input, output):
     return list(input-output)
 
 
+def remove_unknown_edges(sif_content:str) -> str:
+    unknown_line_regex = '.*\sUNKNOWN\s.*\n'
+    modified_sif_content = re.sub(unknown_line_regex, '', sif_content)
+    return modified_sif_content
+
+
+
 def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_genes_file:str, annotation_len:int):
     input_genes_list = read_file(input_genes_file)
     if out_dir[-1:] != '/': out_dir += '/'
@@ -314,6 +352,7 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     analyze_out_dir = f'{out_dir}analyze/'
     if not os.path.exists(out_dir): os.makedirs(out_dir)
     if not os.path.exists(analyze_out_dir): os.makedirs(analyze_out_dir)
+    if not os.path.exists(out_dir): os.makedirs(out_dir)
     if not os.path.exists(analyze_out_dir+'plots/'): os.makedirs(analyze_out_dir+'plots/')
 
     out_linreg = 'analyze_lingreg.json'
@@ -325,10 +364,20 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     input_genes_not_in_the_pkn = get_input_genes_not_in_the_pkn(input_genes_list, genes_list)
     with open(sif_file, 'r') as f : 
         sif_content = "".join(f.readlines())
-    reduced_expr_mtx, genes_not_in_expr_mtx, genes_almost_in_expr_mtx, modified_pkn_genes, sif_content, perfect_matchs_reduced_mtx = reduce_expr_matrix(gene_expr_mtx_file, genes_list, sif_content, annotation_len)
+    reduced_expr_mtx, genes_not_in_expr_mtx, genes_almost_in_expr_mtx, modified_pkn_genes, modified_sif_content = reduce_expr_matrix(gene_expr_mtx_file, genes_list, sif_content, annotation_len)
     # Export reduced matrices
     reduced_expr_mtx.to_csv(out_dir+"pkn_gene_reduced_expr_mtx.csv")
-    perfect_matchs_reduced_mtx.to_csv(out_dir+"perfect_matchs_pkn_gene_reduced_expr_mtx.csv")
+
+
+    #remove Unknown edges
+    modified_sif_content = remove_unknown_edges(modified_sif_content)
+
+    # Reduce pkn
+    reduced_pkn, deleted_inputs = reduce_pkn(modified_sif_content, list(reduced_expr_mtx.columns))
+    save_to_file(reduced_pkn, out_dir+'reduced_pkn.sif')
+    # perfect_matchs_reduced_pkn, perfect_matchs_deleted_inputs = reduce_pkn(sif_content, list(perfect_matchs_reduced_mtx.columns))
+    # save_to_file(perfect_matchs_reduced_pkn, out_dir+'perfect_matchs/reduced_pkn.sif')
+
 
     with open(analyze_out_dir+"input_genes_not_in_the_pkn.txt", "w") as outfile:
             for item in input_genes_not_in_the_pkn:
@@ -339,12 +388,19 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     with open(analyze_out_dir+"genes_almost_in_expr_mtx.txt", "w") as outfile:
             for item in genes_almost_in_expr_mtx:
                 outfile.write("{}\n".format(item))
-
+    with open(analyze_out_dir+"deleted_inputs_from_the_pkn.txt", "w") as outfile:
+                for item in deleted_inputs:
+                    outfile.write("{}\n".format(item))
+    # with open(analyze_out_dir+"perfect_matchs_deleted_inputs_from_the_pkn.txt", "w") as outfile:
+    #             for item in perfect_matchs_deleted_inputs:
+    #                 outfile.write("{}\n".format(item))
     with open(out_dir+'modified_pkn_genes.json', 'w') as outfile:
         json.dump(modified_pkn_genes, outfile, indent=4, sort_keys=True)
 
-    with open(out_dir+"modified_pkn.sif", 'w') as outfile:
-        outfile.write(sif_content)
+    
+
+    # with open(out_dir+"modified_pkn.sif", 'w') as outfile:
+    #     outfile.write(sif_content)
 
     # pt_linregress, empty_genes = plot(reduced_expr_mtx, analyze_out_dir)
     # with open(analyze_out_dir+"lin_regress.json", "w") as outfile:

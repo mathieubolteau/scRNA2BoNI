@@ -37,6 +37,16 @@ def get_no_successors(encoding):
         no_successors = [x.replace('"','') for x in no_successors]
         return no_successors
 
+def get_complexes(encoding):
+    # TODO : fix the import of 'get_complexes.lp' file.
+    # instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_complexes.lp')
+    instance_path = '/home/e21g017n/Nextcloud/work/gitlab_repos/pipeline/pipeline/data/pkn_construction/get_complexes.lp'
+    answers = clyngor.solve(instance_path, inline=encoding)
+    for answer in answers.by_predicate.first_arg_only:
+        complexes = list(answer['complexes'])
+        complexes = [x.replace('"','') for x in complexes]
+        return complexes
+
 def get_nodes(encoding):
     instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_nodes.lp')
     answers = clyngor.solve(instance_path, inline=encoding)
@@ -77,16 +87,21 @@ def compute_stats(dir, encoding, nodes, no_predecessors, no_successors):
 
 
 def run_asp_analyze(sif_file:str, matrix_filename:str, out_dir:str):
-
-    encoding = sif2lp(sif_file)
-
     if not os.path.exists(f'{out_dir}/visu_cys'): os.makedirs(f'{out_dir}/visu_cys')
 
-    to_file(encoding, out_dir+'/pkn.lp')
+    encoding = sif2lp(f'{out_dir}/reduced_pkn.sif')
+    # perfect_encoding = sif2lp(f'{out_dir}/perfect_matchs/reduced_pkn.sif')
+
+
+
+    to_file(encoding, f'{out_dir}/pkn.lp')
     nodes = get_nodes(encoding)
     no_predecessors = get_no_predecessors(encoding)
     no_successors = get_no_successors(encoding)
-    intermediates = list( set(nodes) - set(no_predecessors+no_successors) )
+    complexes = get_complexes(encoding)
+    intermediates = list( set(nodes) - set(no_predecessors+no_successors+complexes) )
+
+    matrix_filename = f'{out_dir}/pkn_gene_reduced_expr_mtx.csv'
 
     matrix_genes = pd.read_csv(matrix_filename).columns
 
@@ -96,33 +111,36 @@ def run_asp_analyze(sif_file:str, matrix_filename:str, out_dir:str):
 
     stats = compute_stats(out_dir, encoding, nodes, no_predecessors, no_successors)
 
-    with open(out_dir+"/nodes.txt", "w") as outfile:
+    with open(f"{out_dir}/nodes.txt", "w") as outfile:
             for item in nodes:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+"/no_predecessors.txt", "w") as outfile:
+    with open(f"{out_dir}/no_predecessors.txt", "w") as outfile:
             for item in no_predecessors:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+"/no_successors.txt", "w") as outfile:
+    with open(f"{out_dir}/no_successors.txt", "w") as outfile:
             for item in no_successors:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+"/intermediates.txt", "w") as outfile:
+    with open(f"{out_dir}/complexes.txt", "w") as outfile:
+            for item in complexes:
+                outfile.write("{}\n".format(item))
+    with open(f"{out_dir}/intermediates.txt", "w") as outfile:
             for item in intermediates:
                 outfile.write("{}\n".format(item))
 
-    with open(out_dir+"/no_predecessors_in_the_matrix.txt", "w") as outfile:
+    with open(f"{out_dir}/no_predecessors_in_the_matrix.txt", "w") as outfile:
             for item in no_predecessors_in_the_matrix:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+"/no_successors_in_the_matrix.txt", "w") as outfile:
+    with open(f"{out_dir}/no_successors_in_the_matrix.txt", "w") as outfile:
             for item in no_successors_in_the_matrix:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+"/intermediates_in_the_matrix.txt", "w") as outfile:
+    with open(f"{out_dir}/intermediates_in_the_matrix.txt", "w") as outfile:
             for item in intermediates_in_the_matrix:
                 outfile.write("{}\n".format(item))
-    with open(out_dir+'/pkn_stats.json', 'w') as f:
+    with open(f"{out_dir}/pkn_stats.json", 'w') as f:
         json.dump(stats, f, indent=4, sort_keys=True)
 
 
-    with open(out_dir+"/visu_cys/node_table.csv", 'w') as f:
+    with open(f"{out_dir}/visu_cys/node_table.csv", 'w') as f:
         csvwriter = csv.writer(f, delimiter='\t')
         header = ['shared name', 'name', 'feature']
         csvwriter.writerow(header)
@@ -131,8 +149,10 @@ def run_asp_analyze(sif_file:str, matrix_filename:str, out_dir:str):
                 row = [node, node, 'no_predecessors']
             elif node in no_successors : 
                 row = [node, node, 'no_successors']
+            elif node in complexes:
+                row = [node, node,'complexes']
             else: 
-                row = [node, node, 'NA']
+                row = [node, node, 'intermediates']
             csvwriter.writerow(row)
 
 

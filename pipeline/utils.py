@@ -56,7 +56,7 @@ def list_to_file(list_to_save: list, filename: str):
         for item in list_to_save:
             f.write(item)
 
-def load_data(filename:str)-> pd.DataFrame:
+def load_data(filename:str, index_name:str)-> pd.DataFrame:
     """Load a dataframe from a file.
 
     Parameters
@@ -69,7 +69,10 @@ def load_data(filename:str)-> pd.DataFrame:
     pd.DataFrame
         Loaded dataframe.
     """
-    return pd.read_csv(filename)
+    return pd.read_csv(filename,index_col=index_name)
+
+def get_cell_class(cell:str, matrix:pd.DataFrame) -> str:
+    return matrix.at[cell, 'clusterUmap']
 
 
 def get_classes(matrix:pd.DataFrame) -> list:
