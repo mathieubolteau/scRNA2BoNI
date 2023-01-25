@@ -14,7 +14,8 @@ try:
     import matplotlib.pyplot as plt
 
     from .utils import load_data, read_file, get_cell_class
-    from pipeline.caspo.caspo.console.handlers import learn_handler, classify_handler, visualize_handler
+    # from caspo.caspo.console.handlers
+    from caspo.console.handlers import learn_handler, classify_handler, visualize_handler
 
 
 except ImportError as E:
@@ -29,7 +30,7 @@ def find_last_index(search_list, starting_item):
     return indices[-1]
 
 def get_value(atom):
-    return re.findall('\"([A-Za-z0-9\.]*)\"', atom)
+    return re.findall('\"([A-Za-z0-9\.\-]*)\"', atom)
 
 
 # def get_value(atom):
@@ -46,7 +47,6 @@ def load_answer_set(filename: str) -> set:
     answer_set_raw = file_list[index]
     answer_set_list = answer_set_raw.split(' ')
     for atom in answer_set_list:
-        print(atom)
         if re.search('^selprot', atom):
             encoded_gene = get_value(atom)[0]
             # gene = genes_hash_map['decode'][encoded_gene]
@@ -335,88 +335,6 @@ def visualize_format_args(args:dict, class_:str)-> Namespace:
     return Namespace(**formatted_args)
 
 
-def dot_to_pdf2(config:dict, classes:list):
-    
-    out_dir1 = f'{config["output_dir"]}/{classes[0]}'
-    out_dir2 = f'{config["output_dir"]}/{classes[1]}'
-
-
-    graph1 = nx.nx_pydot.read_dot(f'{out_dir1}/networks-union.dot')
-
-    nx.drawing.nx_pydot.write_dot(graph1,f'{out_dir1}/OK_GRAPH1_INIT.dot')
-    graph2 = nx.nx_pydot.read_dot(f'{out_dir2}/networks-union.dot')
-    nx.drawing.nx_pydot.write_dot(graph1,f'{out_dir1}/OK_GRAPH2_INIT.dot')
-    graph1_nodes = set(graph1.nodes)
-    graph2_nodes = set(graph2.nodes)
-    common_nodes = graph1_nodes.intersection(graph2_nodes)
-
-
-    graph1_pos = nx.nx_pydot.graphviz_layout(graph1, prog="fdp")
-    # test = nx.drawing.nx_pydot.to_pydot(graph1)
-    # test.write_png(f'{out_dir1}/TEST_GRAPH1111.dot')
-    fixed_pos = dict()
-    for node, pos in graph1_pos.items():
-        if node in common_nodes:
-            fixed_pos[node] = pos
-    # print(fixed_pos)
-
-    # print(graph1)
-    # print(graph1_nodes)
-    # print(graph2_nodes)
-    # print(common_nodes)
-
-
-    print("=============================")
-    for node, pos in fixed_pos.items():
-        right_pos = f'{pos[0]},{pos[1]}!'
-        graph1.add_node(node, pos=right_pos, pos2=pos)
-        graph2.add_node(node, pos=right_pos, pos2=pos)
-    modified_graph1 = nx.nx_pydot.to_pydot(graph1)
-    modified_graph2 = nx.nx_pydot.to_pydot(graph2)
-    with open(f'{out_dir1}/OK_GRAPH1.dot', 'w') as f:
-        f.write(str(modified_graph1))
-    with open(f'{out_dir1}/OK_GRAPH2.dot', 'w') as f:
-        f.write(str(modified_graph2))
-    # print(str(modified_graph2))
-    # nx.drawing.nx_pydot.write_dot(modified_graph2,f'{out_dir1}/OK_GRAPH2.dot')
-    # print(str(P))
-    # P.write_png(f'{out_dir1}/GRAPHHHHHHHHHHHH2_TEST.png', prog='neato')
-    # fig = plt.figure()
-    # nx.draw(graph1, graph1_pos)
-    # # plt.show()
-    # nx.nx_pydot.write_dot(graph1, f'{out_dir1}/GRAPH1111.dot')
-
-    # print("=============================")
-    # fig.savefig(f'{out_dir1}/GRAPH1111.png') 
-
-    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    # print(f'{out_dir1}/GRAPH1111.png')
-
-    # 
-
-    # 
-    
-    
-    # graph2_pos = nx.spring_layout(graph2, pos=fixed_pos, fixed = fixed_pos.keys())
-
-    # test = nx.drawing.nx_pydot.to_pydot(graph1)
-    # test.write_png(f'{out_dir1}/TEST_GRAPH222.dot')
-
-    # print(graph2_pos)
-    # print(graph1.edges())
-    
-    # TODO Handle sample = [0,N]
-    # if config['sample'] != '-1' :
-    #     to_convert = ['networks-union', 'pkn', 'pkn-zip']
-    # else :
-    #     to_convert = ['pkn', 'pkn-zip']
-    # to_convert = ['networks-union', 'pkn', 'pkn-zip']
-    # for file in to_convert:
-    #     in_path = f'{out_dir}/{file}.dot'
-    #     out_path = f'{out_dir}/{file}.pdf'
-    #     graph = pydotplus.graphviz.graph_from_dot_file(in_path)
-    #     graph.write_pdf(out_path)
-
 
 def dot_to_pdf(config:dict, class_:str):
     out_dir = f'{config["output_dir"]}/{class_}'
@@ -465,13 +383,10 @@ def run_bns_inference(config):
     # json.dump(redundancies, open(f'{out_dir}/redundancies.json', 'w'), indent=4, sort_keys=True)
 
     # Maximization of readouts difference
-    print(classes)
-    print('affinities ',affinities)
     json.dump(affinities, open(f"{out_dir}/affinities.json",'w'))
     
     redondancy_cells, redondancy_vectors = redundancies_calculation(affinities, sel_genes, classes, expr_data)
         # duplications = duplications_calculation(affinities=affinities, selgenes=sel_genes, matrix=expr_data)
-    # print(duplications)
     json.dump(redondancy_cells, open(f"{out_dir}/redondancy_cells.json",'w'))
     json.dump(redondancy_vectors, open(f"{out_dir}/redondancy_vectors.json",'w'))
     perturbations = readouts_maximization(redondancy_vectors, readout_genes, expr_data)
@@ -496,7 +411,6 @@ def run_bns_inference(config):
     for class_ in classes:
         # Learning step
         learn_args = learn_format_args(config, class_)
-        print(learn_args)
         learn_handler(learn_args)
 
         # Classify step
@@ -509,5 +423,3 @@ def run_bns_inference(config):
         dot_to_pdf(config, class_)
 
     
-    # dot_to_pdf2(config, classes)
-

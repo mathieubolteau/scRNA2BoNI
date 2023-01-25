@@ -4,6 +4,7 @@
 try:
     import pandas as pd
     import csv
+    import pkg_resources
     
 except ImportError as E:
     print(E)
@@ -87,7 +88,10 @@ def init_gene_synonyms_cache():
     index_syn = {}
     index_std = {}
     # with open(fullpath + '/Homo_sapiens.gene_info', newline='') as csvfile:
-    with open('/home/e21g017n/Nextcloud/work/gitlab_repos/pipeline/pipeline/pyBRAvo/src/bravo/Homo_sapiens.gene_info', newline='') as csvfile:
+    synonyms_path = pkg_resources.resource_filename(__name__, 'pyBRAvo/src/bravo/Homo_sapiens.gene_info')
+    
+    # with open('/home/e21g017n/Nextcloud/work/gitlab_repos/pipeline/pipeline/pyBRAvo/src/bravo/Homo_sapiens.gene_info', newline='') as csvfile:
+    with open(synonyms_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter='\t')
         next(reader)   # Skip first line
         for row in reader:

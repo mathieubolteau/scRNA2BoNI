@@ -1,7 +1,6 @@
 """A python package for discriminate two development stages from single-cell RNA-Seq data."""
 
-# Add imports here
-from .pipeline import *
+# from .scRNA2BoNI import *
 from .utils import *
 
 

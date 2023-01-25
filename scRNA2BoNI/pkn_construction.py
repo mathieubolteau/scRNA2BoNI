@@ -11,7 +11,7 @@ try:
     from sys import argv
     from argparse import Namespace
     import configparser
-    from pipeline.pyBRAvo.src import pyBravo
+    from scRNA2BoNI.pyBRAvo.src import pyBravo
     import shutil
 
 except ImportError as E:
@@ -58,14 +58,9 @@ def run_pybravo(args):
     # Copy the input genes file
     src_ = args['inputs_genes_file']
     target = f"{args['output_dir']}/input_genes_list.txt"
-    print(src_, target)
     shutil.copy(src_, target)
 
     # Format args for pyBRAvo
-
-    print(args)
-
     args = format_args(args)
-    print(args)
     args = Namespace(**args)
     pyBravo.main(args)

@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 # Self-descriptive entries which should always be present
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
 [project]
-name = "pipeline"
+name = "scRNA2BoNI"
 description = "A python package for discriminate two development stages from single-cell RNA-Seq data."
 dynamic = ["version"]
 readme = "README.md"
 authors = [
-    { name = "Mathieu BOLTEAU", email = "mathieu.bolteau@univ-nantes.fr" }
+    { name = "Mathieu BOLTEAU", email = "mathieu.bolteau@ls2n.fr" }
 ]
 license = { text = "MIT" }
 # See https://pypi.org/classifiers/
@@ -18,10 +18,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
-requires-python = ">=3.8"
+requires-python = "==3.8"
 # Declare any run-time dependencies that should be installed with the package.
 dependencies = [
-    # "importlib-resources;python_version<'3.10'",
     "matplotlib",
     "clingo",
     "nxpd",
@@ -36,13 +35,13 @@ dependencies = [
     "flask",
     "pydotplus",
     "graphviz",
-    
+    "clyngor",
 ]
 
-# Update the urls once the hosting is set up.
-#[project.urls]
-#"Source" = "https://github.com/<username>/pipeline/"
-#"Documentation" = "https://pipeline.readthedocs.io/"
+
+[project.urls]
+"Source" = "https://github.com/mathieubolteau/scRNA2BoNI/"
+#"Documentation" = "https://scRNA2BoNI.readthedocs.io/"
 
 [project.optional-dependencies]
 test = [
@@ -76,13 +75,13 @@ namespaces = false
 
 # Ref https://setuptools.pypa.io/en/latest/userguide/datafiles.html#package-data
 [tool.setuptools.package-data]
-pipeline = [
-    "py.typed",
-    "*.lp"
+scRNA2BoNI = [
+    "*.lp",
+    "*.gene_info",
 ]
 
 [tool.versioningit]
-default-version = "1+unknown"
+default-version = "1"
 
 [tool.versioningit.format]
 distance = "{base_version}+{distance}.{vcs}{rev}"
@@ -97,4 +96,4 @@ match = ["*"]
 default-tag = "1.0.0"
 
 [tool.versioningit.write]
-file = "pipeline/_version.py"
+file = "scRNA2BoNI/_version.py"

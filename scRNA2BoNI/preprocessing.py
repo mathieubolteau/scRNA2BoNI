@@ -128,7 +128,6 @@ def run_preprocessing(config):
     inputs = read_file(f"{out_dir}/no_predecessors_in_the_matrix.txt")
     intermediates = read_file(f"{out_dir}/intermediates_in_the_matrix.txt")
     annotations_len = config['annotation_len']
-    print(matrix.columns)
     bin_reduced_matrix, io_genes_intersectPKN_matrix, readouts_genes_intersectPKN_matrix = reduce_and_binarize_matrix(matrix, cell_types_selected, readouts, inputs, intermediates, annotations_len)
     # bin_reduced_matrix = bin_reduced_matrix.set_index('Name')
     bin_reduced_matrix.to_csv(f'{out_dir}/bin_reduced_matrix.csv', index=True)

@@ -70,11 +70,8 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
         config['k'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'k')
         if config['k'] <= 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect k value. See configuration file.')
-        config['gene_inputs_pourcentage'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'gene_inputs_pourcentage')
-        if config['gene_inputs_pourcentage'] < 0:
-            raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect gene inputs pourcentages. See configuration file.')
         config['timeout'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'timeout')
-        if config['gene_inputs_pourcentage'] < 0:
+        if config['timeout'] < 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect timeout. See configuration file.')
 
         config['fit'] = config_parser.getfloat('BNS_INFERENCE', 'fit')
@@ -112,20 +109,20 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
 
 
 def run():
-    pipeline_parser = argparse.ArgumentParser()
-    pipeline_parser.add_argument('configuration_file', 
+    scRNA2BoNI_parser = argparse.ArgumentParser()
+    scRNA2BoNI_parser.add_argument('configuration_file', 
                                  help='configuration file path')
-    pipeline_parser.add_argument('--pkn-construction', action='store_true', required=False,
+    scRNA2BoNI_parser.add_argument('--pkn-construction', action='store_true', required=False,
                                 help='run the PKN construction')
-    pipeline_parser.add_argument('--preprocessing', action='store_true', required=False,
+    scRNA2BoNI_parser.add_argument('--preprocessing', action='store_true', required=False,
                                 help='run the preprocessing step')
-    pipeline_parser.add_argument('--pseudo-perturbation-inference', action='store_true', required=False,
+    scRNA2BoNI_parser.add_argument('--pseudo-perturbation-inference', action='store_true', required=False,
                                 help='run the pseudo-perturbations inference')
-    pipeline_parser.add_argument('--bns-inference', action='store_true', required=False,
+    scRNA2BoNI_parser.add_argument('--bns-inference', action='store_true', required=False,
                                 help='run the BNs inference')
     
 
-    args = pipeline_parser.parse_args()
+    args = scRNA2BoNI_parser.parse_args()
     config_parser = config_file_parser(args.configuration_file)
     config = check_config_file(config_parser)
     out_dir_path = config['output_dir']
