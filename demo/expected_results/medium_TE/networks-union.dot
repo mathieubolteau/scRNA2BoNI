@@ -1,0 +1,14 @@
+digraph  {
+C21orf33 [color=black, fillcolor=white, fontname=Helvetica, fontsize=18, shape=ellipse, style="filled, bold"];
+JUN [color=orangered, fillcolor=orangered, fontname=Helvetica, fontsize=18, shape=ellipse, style="filled, bold"];
+CD4 [color=lightblue, fillcolor=lightblue, fontname=Helvetica, fontsize=18, shape=ellipse, style="filled, bold"];
+"gate-1" [color=black, fillcolor=black, fixedsize=True, fontname=Helvetica, fontsize=18, gate=True, height="0.2", label=".", shape=ellipse, style="filled, bold", width="0.2"];
+MYB [color=black, fillcolor=white, fontname=Helvetica, fontsize=18, shape=ellipse, style="filled, bold"];
+E2F1 [color=black, fillcolor=white, fontname=Helvetica, fontsize=18, shape=ellipse, style="filled, bold"];
+C21orf33 -> "gate-1"  [arrowhead=tee, color=red, dir=forward, key=0, penwidth="2.5", sign="-1", weight="0.5"];
+C21orf33 -> E2F1  [arrowhead=tee, color=red, dir=forward, key=0, penwidth="2.5", sign="-1", weight="0.5"];
+JUN -> C21orf33  [arrowhead=normal, color=forestgreen, dir=forward, key=0, penwidth="2.5", sign=1, weight="0.5"];
+"gate-1" -> CD4  [arrowhead=normal, color=forestgreen, dir=forward, key=0, penwidth="2.5", sign=1, weight="0.5"];
+MYB -> "gate-1"  [arrowhead=tee, color=red, dir=forward, key=0, penwidth="2.5", sign="-1", weight="0.5"];
+E2F1 -> MYB  [arrowhead=normal, color=forestgreen, dir=forward, key=0, penwidth="2.5", sign=1, weight="0.5"];
+}

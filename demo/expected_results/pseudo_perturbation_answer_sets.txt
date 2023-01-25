@@ -1,0 +1,36 @@
+clingo version 5.4.0
+Reading from ...xpected_results/expression_instance.lp ...
+Solving...
+Answer: 1
+selprot("TERT") selprot("RB1") selprot("MTSS1") selprot("E2F6") selprot("PITX2") selprot("SNAI1") selprot("AES") selprot("ELK1") selprot("SIRT1") selprot("CEBPA") nb_aff(0)
+Optimization: 0
+Answer: 2
+selprot("TERT") selprot("RB1") selprot("MTSS1") selprot("E2F6") selprot("PITX2") selprot("SNAI1") selprot("AES") selprot("ELK1") selprot("SIRT1") selprot("CEBPA") affinite("E6.13.1388","E6.12.1276") nb_aff(1)
+Optimization: -1
+Answer: 3
+selprot("TERT") selprot("RB1") selprot("MTSS1") selprot("E2F6") selprot("PITX2") selprot("SNAI1") selprot("AES") selprot("ELK1") selprot("SIRT1") selprot("CEBPA") affinite("E6.13.1388","E6.11.1065") affinite("E6.13.1398","E6.12.1275") nb_aff(2)
+Optimization: -2
+Answer: 4
+selprot("TERT") selprot("RB1") selprot("MTSS1") selprot("E2F6") selprot("SNAI1") selprot("SMAD3") selprot("AES") selprot("ELK1") selprot("SIRT1") selprot("CEBPA") affinite("E6.13.1391","E6.1.78") affinite("E6.12.1278","E6.12.1268") affinite("E6.13.1393","E6.12.1275") nb_aff(3)
+Optimization: -3
+Answer: 5
+selprot("TERT") selprot("MTSS1") selprot("E2F6") selprot("PITX2") selprot("SNAI1") selprot("SMAD3") selprot("SRF") selprot("AES") selprot("SIRT1") selprot("CEBPA") affinite("E6.13.1391","E6.11.1065") affinite("E6.12.1278","E6.11.1076") affinite("E6.13.1398","E6.12.1268") affinite("E6.13.1388","E6.12.1272") nb_aff(4)
+Optimization: -4
+Answer: 6
+selprot("TRIM28") selprot("EP300") selprot("YY1") selprot("PITX2") selprot("PLCG1") selprot("HDAC2") selprot("STK11") selprot("EGR1") selprot("PARP1") selprot("HIF1A") affinite("E6.12.1277","E5.37.3237") affinite("E6.13.1398","E6.1.72") affinite("E6.13.1388","E6.1.84") affinite("E6.12.1486","E6.11.1076") affinite("E6.13.1384","E6.12.1287") affinite("E6.13.1394","E6.12.1291") nb_aff(6)
+Optimization: -6
+Answer: 7
+selprot("TRIM28") selprot("EP300") selprot("YY1") selprot("PITX2") selprot("PLCG1") selprot("STK11") selprot("EGR1") selprot("PARP1") selprot("HIF1A") selprot("LCK") affinite("E6.13.1388","E5.13.1767") affinite("E6.12.1277","E5.37.3237") affinite("E6.13.1398","E6.1.72") affinite("E6.13.1392","E6.1.78") affinite("E6.12.1486","E6.11.1076") affinite("E6.13.1384","E6.12.1287") affinite("E6.14.1403","E6.12.1291") nb_aff(7)
+Optimization: -7
+Answer: 8
+selprot("YY1") selprot("IRF1") selprot("JUN") selprot("FOXA2") selprot("EGFR") selprot("STK11") selprot("SMAD3") selprot("JAK1") selprot("PARP1") selprot("HIF1A") affinite("E6.13.1390","E5.12.1033") affinite("E6.11.1070","E5.12.1042") affinite("E6.13.1377","E5.3.55") affinite("E6.13.1391","E5.37.3237") affinite("E6.12.1484","E6.1.84") affinite("E6.13.1394","E6.1.88") affinite("E6.13.1395","E6.11.1071") affinite("E6.13.1380","E6.12.1268") affinite("E6.12.1483","E6.12.1276") affinite("E6.13.1384","E6.12.1286") nb_aff(10)
+Optimization: -10
+SATISFIABLE
+
+TIME LIMIT   : 1
+Models       : 8+
+  Optimum    : unknown
+Optimization : -10
+Calls        : 1
+Time         : 120.000s (Solving: 117.64s 1st Model: 0.23s Unsat: 0.00s)
+CPU Time     : 119.989s

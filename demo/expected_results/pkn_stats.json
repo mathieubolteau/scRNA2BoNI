@@ -1,0 +1,15 @@
+{
+    "edges": {
+        "ACTIVATION": 82,
+        "INHIBITION": 35,
+        "PART_OF": 121
+    },
+    "nb_edges": 239,
+    "nb_genes_almost_in_expr_mtx": 152,
+    "nb_genes_not_in_expr_mtx": 52,
+    "nb_input_genes": 70,
+    "nb_input_genes_not_in_the_matrix": 54,
+    "nb_noddes_without_successors": 15,
+    "nb_nodes": 169,
+    "nb_nodes_without_predecessors": 72
+}

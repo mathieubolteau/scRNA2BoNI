@@ -1,0 +1,5 @@
+mapping,frequency,inclusive,exclusive
+C21orf33<-JUN,0.5,MYB<-E2F1;E2F1<-!C21orf33;CD4<-!C21orf33+!MYB,
+CD4<-!C21orf33+!MYB,0.5,C21orf33<-JUN;E2F1<-!C21orf33;MYB<-E2F1,
+MYB<-E2F1,0.5,C21orf33<-JUN;E2F1<-!C21orf33;CD4<-!C21orf33+!MYB,
+E2F1<-!C21orf33,0.5,C21orf33<-JUN;MYB<-E2F1;CD4<-!C21orf33+!MYB,
