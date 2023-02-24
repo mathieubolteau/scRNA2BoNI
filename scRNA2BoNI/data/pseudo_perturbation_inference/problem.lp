@@ -11,42 +11,40 @@
 
 
 % Generate combinations of k genes
-{selgene(G) : pert(C,G,S,CL)} = k .
+{selinput(G) : pert(C,G,S,CL), not intermediate(G)} = i .
+{selinter(G): intermediate(G)} = k-i.
+
+1{selinput(G)  : parent(G,I), input(G)} :- selinter(I).
 
 % Generate the corresponding perturbation vectors
-selpert(E,V,S,C) :- selgene(V), pert(E,V,S,C).
-
-% Generate an input predicate for genes that are inputs
-selinput(G) :- selgene(G), input(G).
+selpert(E,V,S,C) :- selinput(V), pert(E,V,S,C).
+selpert(E,V,S,C) :- selinter(V), pert(E,V,S,C).
 
 % Generate a equal/3 predicate for cells I and J, from two different classes, where their expression for the gene G is equal
-equal(I,J,G) :- selpert(I,G,S1,C1), selpert(J,G,S2,C2), C1<C2, S1==S2.
+equal(I,J,G) :- selpert(I,G,S1,C1), selpert(J,G,S2,C2), I!=J, S1==S2.
 
-% Count the number of equal/3 predicates between 2 cells of different classes, among the k selected genes
-countequal(I,J,M) :- M={equal(I,J,_)}, selpert(I,_,_,C1), selpert(J,_,_,C2), C1<C2.
+
+pot_affi(I,J) :- k={equal(I,J,_)},  selpert(I,_,_,C1), selpert(J,_,_,C2), C1<C2, I!=J.
 
 % Generate, or not, an affinity/2 predicate when the number of countequal/3
 % is equal to k for cells I and J of different classes, which guarantees that all genes are similarly expressed in both cells I and J
-0{affinity(I,J)}1 :- countequal(I,J,k), I!=J, selpert(I,_,_,C1), selpert(J,_,_,C2), C1<C2.
+0{affinity(I,J)}1 :- pot_affi(I,J).
 
-% Count the number of input genes expressed at 1 for each affinity/2
-nbInputOnes(C,N) :- N={pert(C,G,1,_) : selinput(G)}, affinity(C,_).
+% % Count the number of input genes expressed at 1 for each affinity/2
+nbInputOnes(C,N) :- N={pert(C,G,1,_) : selinput(G), input(G)}, affinity(C,_).
 
-% Forbid the affinity/2 where the number of input genes expressed at 1 is less than 1
+% % Forbid the affinity/2 where the number of input genes expressed at 1 is less than 1
 :- affinity(C,_), nbInputOnes(C,N), N < 1.
 
-% Generate a diff/3 predicate for cells I1 and I2, from a same class, where their expression for the gene G is different
-diff(I1,I2,G) :- selpert(I1,G,S1,C1), selpert(I2,G,S2,C2), C1==C2, S1!=S2, I1<I2.
+:- affinity(I,J1), affinity(I,J2), J1!=J2.
+:- affinity(I1,J), affinity(I2,J), I1!=I2.
 
-% Count the number of diff/3 predicates between 2 cells of the same class, among the k selected genes
-countdiff(I1,I2,M) :- M={diff(I1,I2,_)}, I1<I2, selpert(I1,_,_,C1), selpert(I2,_,_,C2),C1==C2.
+:- pot_affi(I1,J), pot_affi(I2,J), affinity(I2,J), I1<I2.
+:- pot_affi(I,J1), pot_affi(I,J2), affinity(I,J2), J1<J2.
 
-% Forbids countdiff/3 predicates for cells I1 and I2, from the first class
-% where there is no difference in expression values for the k selected genes
-:- countdiff(I1,I2,0), selpert(I1,_,_,C1), selpert(I2,_,_,C2), C1==C2, affinity(I1,_), affinity(I2,_), I1<I2.
 
-% Make the same for the second class
-:- countdiff(I1,I2,0), selpert(I1,_,_,C1), selpert(I2,_,_,C2), C1==C2, affinity(_,I1), affinity(_,I2), I1<I2.
+selgene(G) :- selinput(G).
+selgene(G) :- selinter(G).
 
 % Maximize the number of pairs of cells
 #maximize{1, I : affinity(I,_)}.

@@ -70,6 +70,9 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
         config['k'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'k')
         if config['k'] <= 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect k value. See configuration file.')
+        config['gene_inputs_pourcentage'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'gene_inputs_pourcentage')
+        if config['gene_inputs_pourcentage'] < 0:
+            raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect gene inputs pourcentages. See configuration file.')
         config['timeout'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'timeout')
         if config['timeout'] < 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect timeout. See configuration file.')

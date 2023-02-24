@@ -8,6 +8,8 @@ try:
     from scipy import stats
     import json
     from functools import partial
+    import pkg_resources
+    import clyngor
 
 
     from .utils import  read_file, load_data, get_classes, save_to_file
@@ -86,11 +88,34 @@ def encode(to_encode:list)-> dict:
 
 
 
-def create_inputs_instance(inputs:list):
+def to_lp_file(to_transform:list, predicate_name:str):
     instance = str()
-    for input in inputs:
-        instance += f'input("{input}").\n'
+    for item_to_transform in to_transform:
+        items = item_to_transform.split(',')
+        transformed = str()
+        for i in range(len(items)):
+            transformed += f'"{items[i]}",'
+        transformed = transformed[:-1] # Remove last useless ','
+        instance += f'{predicate_name}({transformed}).\n'        
     return instance
+
+def get_parents(encoding, out_dir):
+    print('GET PARENTS')
+    instance_path = pkg_resources.resource_filename(__name__, 'data/processing/get_parents.lp')
+    intermediates_path = f'{out_dir}/intermediates_instance.lp'
+    programs = [instance_path, intermediates_path]
+    print(programs)
+    answers = clyngor.solve(programs, inline=encoding)
+    print(answers)
+    for answer in answers.by_predicate:
+        parents_answer = list(answer['parent'])
+        parents = list()
+        for tuple in parents_answer:
+            parents.append(','.join([elem.strip('"') for elem in tuple]))
+        # parents = [x.replace('"','') for x in parents]
+        print(parents)
+        return parents
+
 
 
 def create_expression_instance(matrix, readouts, annotations_len):
@@ -145,11 +170,19 @@ def run_preprocessing(config):
     # json.dump(classes_hash_map, open(f"{out_dir}/classes_hash_map.json", "w"), sort_keys=True, indent=4)
 
 
-    inputs_instance = create_inputs_instance(inputs)
+    inputs_instance = to_lp_file(inputs, 'input')
+    save_to_file(inputs_instance, f'{out_dir}/inputs_instance.lp')
+    intermediates_instance = to_lp_file(intermediates, 'intermediate')
+    save_to_file(intermediates_instance, f'{out_dir}/intermediates_instance.lp')
+    
+    pkn_encoding = open(f'{out_dir}/pkn.lp').read()
+    parents = get_parents(pkn_encoding, out_dir)
+    parents_instance = to_lp_file(parents,'parent')
 
     expression_instance, cells_list = create_expression_instance(bin_reduced_matrix, readouts, annotations_len)
     
-    save_to_file(inputs_instance, f'{out_dir}/inputs_instance.lp')
+    
+    save_to_file(parents_instance, f'{out_dir}/parents_instance.lp')
     save_to_file(expression_instance, f'{out_dir}/expression_instance.lp')
     with open(f'{out_dir}/cells_list_by_classes.json', 'w') as f:
         json.dump(cells_list, f)
