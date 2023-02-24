@@ -47,12 +47,12 @@ def load_answer_set(filename: str) -> set:
     answer_set_raw = file_list[index]
     answer_set_list = answer_set_raw.split(' ')
     for atom in answer_set_list:
-        if re.search('^selprot', atom):
+        if re.search('^selgene', atom):
             encoded_gene = get_value(atom)[0]
             # gene = genes_hash_map['decode'][encoded_gene]
             gene = encoded_gene
             sel_genes.append(gene)
-        elif re.search('^affinite', atom):
+        elif re.search('^affinity', atom):
             cur_cells = get_value(atom)
             encoded_cell_i = cur_cells[0]
             # cell_i = cells_hash_map['decode'][encoded_cell_i]
@@ -409,6 +409,7 @@ def run_bns_inference(config):
     create_setup_file(sel_genes, readout_genes, input_genes, intermediate_genes, out_dir)
 
     for class_ in classes:
+        print(f"--> Class: {class_}")
         # Learning step
         learn_args = learn_format_args(config, class_)
         learn_handler(learn_args)

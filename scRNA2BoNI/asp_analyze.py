@@ -43,8 +43,6 @@ def get_complexes(encoding):
     # TODO : fix the import of 'get_complexes.lp' file.
     instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_complexes.lp')
     
-    print("FKSDHGLKSIDGHLSDIHGSDLIGHDSL")
-    print(instance_path)# instance_path = '/home/e21g017n/Nextcloud/work/gitlab_repos/pipeline/pipeline/data/pkn_construction/get_complexes.lp'
     answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate.first_arg_only:
         complexes = list(answer['complexes'])
