@@ -76,6 +76,9 @@ def check_config_file(config_parser: configparser.ConfigParser) -> dict():
         config['timeout'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'timeout')
         if config['timeout'] < 0:
             raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect timeout. See configuration file.')
+        config['time_point'] = config_parser.getint('PSEUDO_PERTURBATIONS', 'time_point')
+        if config['time_point'] < 0:
+            raise ValueError('Configuration file -- [PSEUDO_PERTURBATIONS] : Incorrect time_point. See configuration file.')
 
         config['fit'] = config_parser.getfloat('BNS_INFERENCE', 'fit')
         if config['fit'] < 0:

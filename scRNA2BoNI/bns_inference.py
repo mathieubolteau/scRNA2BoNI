@@ -105,6 +105,7 @@ def redundancies_calculation(affinities:dict, selgenes:list, class_names:list, m
     }
     redundancy_vectors = {}
     c1_class_name = class_names[0]
+    print(matrix)
     c1_submatrix = matrix[matrix['clusterUmap']==c1_class_name]
 
     c2_class_name = class_names[1]
@@ -204,14 +205,24 @@ def readouts_maximization(redundancy_vector:dict, readouts:list, matrix:pd.DataF
 #     return perturbations
 
 
-def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, ii_genes: list, cells: list, out_dir: str, class_name: str, intermediate_genes:list) :
+def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, input_genes: list, cells: list, out_dir: str, class_name: str, intermediate_genes:list) :
 
-    # Clean lists # TODO Check if it's really necessary
-    gene_mtx = set(expr_data.columns)
-    readout_genes = list(set(readout_genes).intersection(gene_mtx))
-    ii_genes = list(set(ii_genes).intersection(gene_mtx))
+    # # Clean lists # TODO Check if it's really necessary
+    # gene_mtx = set(expr_data.columns)
+    # readout_genes = list(set(readout_genes).intersection(gene_mtx))
+    # ii_genes = list(set(ii_genes).intersection(gene_mtx))
 
-
+    # print(intermediate_genes)
+    # print(type(intermediate_genes))
+    # # Order inputs and intermediates
+    # ordered_ii_genes = list()
+    # for gene in ii_genes:
+    #     if gene not in intermediate_genes:
+    #         ordered_ii_genes.append(gene)
+    # ordered_ii_genes.sort()
+    # print(intermediate_genes.sort())
+    # ordered_ii_genes += intermediate_genes.sort()
+    
 
     inputs_dict = dict()
     DA_readouts_dict = dict()
@@ -221,14 +232,19 @@ def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, ii_genes: lis
 
     inputs_dict[f'TR:{class_name}:CellLine'] = [1 for x in range(class_len*2)]
 
-    for ii_gene in ii_genes:
+    for ii_gene in input_genes:
         current_column = list()
         for cell in cells:
             # idx = expr_data.index[expr_data.index == cell].tolist()[0]
             expr_value = expr_data.at[cell, ii_gene]
-            # if intermediates genes (stimuli for caspo) reverse the expression value
-            if ii_gene in intermediate_genes:
-                expr_value = 1 if expr_value==0 else 0
+            current_column.append(expr_value)
+        inputs_dict[f'TR:{ii_gene}'] = current_column+current_column
+    for ii_gene in intermediate_genes:
+        current_column = list()
+        for cell in cells:
+            # idx = expr_data.index[expr_data.index == cell].tolist()[0]
+            expr_value = expr_data.at[cell, ii_gene]
+            expr_value = 1 if expr_value==0 else 0
             current_column.append(expr_value)
         inputs_dict[f'TR:{ii_gene}'] = current_column+current_column
 
@@ -350,13 +366,121 @@ def dot_to_pdf(config:dict, class_:str):
         graph = pydotplus.graphviz.graph_from_dot_file(in_path)
         graph.write_pdf(out_path)
 
+def get_timelaps_redundancies(filename:str, classes:list, expr_data:pd.DataFrame):
+    sel_genes, affinities = load_answer_set(filename)
+
+    redundancies_cells, _ = redundancies_calculation(affinities, sel_genes, classes, expr_data)
+    return redundancies_cells[classes[0]]['nb'], redundancies_cells[classes[1]]['nb']
+
+
+def timelaps_analyze(directory:str, classes:list, expr_data:pd.DataFrame, out_dir:str):
+    steps = os.listdir(directory)
+    steps = [x  for x in steps if x.endswith(".out")]
+    steps = sorted([int(step_file.split(".")[0]) for step_file in steps])
+
+    X = list()
+    Y_affinities = list()
+    Y_redundancies_class1 = list()
+    Y_redundancies_class2 = list()
+    
+    for step in steps:
+        step_file = f"{directory}/{step}.out"
+        with open(step_file) as f:
+            lines = f.readlines()
+        opti = False
+        last_optimization_line = None
+        for line in reversed(lines):
+            if line.startswith("Optimization:"):
+                last_optimization_line = line
+                break
+        if last_optimization_line:
+            opti = int(last_optimization_line.split("Optimization:")[-1].strip())
+            index = lines.index(last_optimization_line)
+            answer_set = lines[index - 1].strip()
+            X.append(step)
+            Y_affinities.append(opti*-1)
+            red_class1, red_class2 = get_timelaps_redundancies(step_file, classes, expr_data)
+            Y_redundancies_class1.append(red_class1)
+            Y_redundancies_class2.append(red_class2)
+    
+    print(X)
+    print(Y_affinities)
+    print(Y_redundancies_class1)
+
+    # Create Plot
+    fig, ax1 = plt.subplots() 
+    
+    ax1.set_xlabel('Time') 
+    ax1.set_ylabel('Number of affinity') 
+    line1, = ax1.plot(X, Y_affinities, color = '#66c2a5', marker='o', label='Number of affinity') 
+    ax1.tick_params(axis ='y') 
+
+
+    
+    # Adding Twin Axes
+
+    ax2 = ax1.twinx() 
+    
+    ax1.set_xticks(X)
+    # ax1.set_ylim(0,40)
+    # ax2.set_ylim(0,100)
+
+    ax2.set_ylabel('Number of redundancy') 
+    line2, = ax2.plot(X, Y_redundancies_class1, color = '#8da0cb', marker='o', label='CLASS 1') 
+    line3, = ax2.plot(X, Y_redundancies_class2, color = '#8da0ee', marker='o', label='CLASS 2') 
+    ax2.tick_params(axis ='y') 
+
+    ax1.legend(handles=[line1, line2, line3])
+    
+    # Show plot
+    # ax1.legend()
+    
+
+    # plt.show()
+    plt.savefig(f'{out_dir}/redundancies_two_classes.png')
+
+
+
+    # Create Plot
+
+    Y_redundancies = [a + b for a, b in zip(Y_redundancies_class1, Y_redundancies_class2)]
+    fig, ax1 = plt.subplots() 
+    
+    ax1.set_xlabel('Time') 
+    ax1.set_ylabel('Number of affinity') 
+    line1, = ax1.plot(X, Y_affinities, color = '#66c2a5', marker='o', label='Number of affinity') 
+    ax1.tick_params(axis ='y') 
+
+
+    
+    # Adding Twin Axes
+
+    ax2 = ax1.twinx() 
+    
+    ax1.set_xticks(X)
+    # ax1.set_ylim(0,40)
+    # ax2.set_ylim(0,100)
+
+    ax2.set_ylabel('Number of redundancy') 
+    line2, = ax2.plot(X, Y_redundancies, color = '#8da0cb', marker='o', label='redundancy') 
+    ax2.tick_params(axis ='y') 
+
+    ax1.legend(handles=[line1, line2])
+    
+    # Show plot
+    # ax1.legend()
+
+    # plt.show()
+    plt.savefig(f'{out_dir}/redundancies_merged_classes.png')
+
+
+
+
 
 def run_bns_inference(config):
     out_dir = config['output_dir']
     classes = config['class_types']
     matrix_filename = f"{out_dir}/bin_reduced_matrix.csv"
-    readout_filename = f"{out_dir}/no_successors_in_the_matrix.txt"
-    readout_genes = read_file(readout_filename)
 
     # genes_hash_map = json.load(open(f'{out_dir}/genes_hash_map.json'))
     # cells_hash_map = json.load(open(f'{out_dir}/cells_hash_map.json'))
@@ -366,14 +490,37 @@ def run_bns_inference(config):
     # cells_hash_map = ''
     # classes_hash_map = ''
 
+    expr_data = load_data(matrix_filename, index_name='Name')
+
+    # timelaps_analyze(f'{out_dir}/timelaps', classes, expr_data, out_dir)
+
+
     answer_set_filename = f"{out_dir}/pseudo_perturbation_answer_sets.txt"
     sel_genes, affinities = load_answer_set(answer_set_filename)
 
-    input_genes = read_file(f"{out_dir}/no_predecessors_in_the_matrix.txt")
-    intermediate_genes = read_file(f"{out_dir}/intermediates_in_the_matrix.txt")
-    expr_data = load_data(matrix_filename, index_name='Name')
+    input_genes_in_the_matrix = read_file(f"{out_dir}/no_predecessors_in_the_matrix.txt")
+    intermediate_genes_in_the_matrix = read_file(f"{out_dir}/intermediates_in_the_matrix.txt")
+    readout_genes = read_file(f"{out_dir}/no_successors_in_the_matrix.txt")
     # expr_data
+
+    # gene_mtx = set(expr_data.columns)
+    # input_genes_in_the_matrix = list(set(input_genes).intersection(gene_mtx))
+    # intermediate_genes_in_the_matrix = list(set(intermediate_genes).intersection(gene_mtx))
+    # readout_genes_in_the_matrix = list(set(readout_genes).intersection(gene_mtx))
     
+    # Exclude gene not in the matrix
+    input_genes = list(set(sel_genes).intersection(input_genes_in_the_matrix))
+    intermediate_genes = list(set(sel_genes).intersection(intermediate_genes_in_the_matrix))
+
+    input_genes.sort()
+    intermediate_genes.sort()
+    readout_genes.sort()
+    
+
+    print(input_genes)
+    print(intermediate_genes)
+    print(readout_genes)
+
     # Redundancies calculation 
     classes = list()
     for c in affinities[0]:
@@ -394,6 +541,7 @@ def run_bns_inference(config):
     json.dump(perturbations, open(f"{out_dir}/perturbations.json",'w'))
 
 
+    print(intermediate_genes)
 
     # Preprocessing step
     for i  in range(len(classes)):
@@ -402,7 +550,7 @@ def run_bns_inference(config):
         # TO TREAT !!!
         curent_cells = [item[i] for item in perturbations] 
         # curent_cells = [item[i] for item in affinities]
-        create_midas_file(ii_genes=sel_genes, expr_data=expr_data, cells=curent_cells,
+        create_midas_file(input_genes=input_genes, expr_data=expr_data, cells=curent_cells,
                         readout_genes=readout_genes, out_dir=out_dir, class_name=class_, intermediate_genes=intermediate_genes)
     
     transform_sif_file(out_dir)

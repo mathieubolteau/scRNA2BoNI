@@ -78,6 +78,7 @@ namespaces = false
 scRNA2BoNI = [
     "*.lp",
     "*.gene_info",
+    "*.sh",
 ]
 
 [tool.versioningit]

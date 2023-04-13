@@ -35,7 +35,13 @@ def run_pseudo_perturbation_inference(config):
     parents_instance_filename = f'{out_dir}/parents_instance.lp'
     problem_instance = pkg_resources.resource_filename(__name__, 'data/pseudo_perturbation_inference/problem.lp')
     timeout = config['timeout'] if config['timeout'] != '' else 0
+    time_point = config['time_point']
 
-    cmd = f'clingo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {parents_instance_filename} {intermediates_instance_filename} {problem_instance} > {out_dir}/pseudo_perturbation_answer_sets.txt'
+    script = pkg_resources.resource_filename(__name__, 'data/pseudo_perturbation_inference/run_pseudo-perturbation_inference.sh')
+    
+
+    # cmd = f'clingo --const k={k} --const i={i} --time-limit={timeout} {expression_instance_filename} {input_instance_filename} {parents_instance_filename} {intermediates_instance_filename} {problem_instance} > {out_dir}/pseudo_perturbation_answer_sets.txt'
+    cmd = f'bash {script} {k} {i} {out_dir} {timeout} {expression_instance_filename} {input_instance_filename} {parents_instance_filename} {intermediates_instance_filename} {problem_instance} {time_point}'
     print(f'CMD:  {cmd}')
     clingo_output = os.popen(cmd).read()
+    print(clingo_output)

@@ -37,18 +37,3 @@ Optimization: -10
 Answer: 12
 affinity("E6.13.1379","E5.13.1767") affinity("E6.13.1388","E6.1.78") affinity("E6.13.1392","E6.1.80") affinity("E6.13.1399","E6.11.1064") affinity("E6.12.1487","E6.11.1065") affinity("E6.12.1277","E6.11.1076") affinity("E6.13.1383","E6.12.1266") affinity("E6.13.1387","E6.12.1268") affinity("E6.12.1271","E6.12.1275") affinity("E6.13.1396","E6.12.1276") affinity("E6.13.1384","E6.12.1287") selgene("EGR1") selgene("SNAI1") selgene("TERT") selgene("CEBPA") selgene("CALM3") selgene("PCBP4") selgene("SPTLC3") selgene("HDAC7") selgene("NFX1") selgene("STK11")
 Optimization: -11
-Answer: 13
-affinity("E6.12.1277","E5.13.1767") affinity("E6.13.1377","E5.3.55") affinity("E6.13.1399","E5.37.3237") affinity("E6.12.1280","E6.1.72") affinity("E6.13.1388","E6.1.78") affinity("E6.12.1484","E6.11.1065") affinity("E6.13.1390","E6.11.1076") affinity("E6.13.1387","E6.12.1268") affinity("E6.12.1271","E6.12.1272") affinity("E6.12.1278","E6.12.1275") affinity("E6.13.1384","E6.12.1276") affinity("E6.11.1070","E6.12.1287") selgene("SNAI1") selgene("MYB") selgene("IL23R") selgene("CEBPA") selgene("RBPJ") selgene("PCBP4") selgene("HIF1A") selgene("SPTLC3") selgene("HDAC7") selgene("JAK2")
-Optimization: -12
-Answer: 14
-affinity("E6.12.1487","E5.13.1767") affinity("E6.11.1070","E5.3.55") affinity("E6.13.1388","E5.37.3235") affinity("E6.12.1277","E5.37.3237") affinity("E6.13.1390","E6.1.82") affinity("E6.12.1271","E6.1.88") affinity("E6.13.1395","E6.11.1064") affinity("E6.12.1278","E6.11.1065") affinity("E6.12.1484","E6.12.1275") affinity("E6.13.1398","E6.12.1276") affinity("E6.13.1380","E6.12.1286") affinity("E6.13.1383","E6.12.1287") affinity("E6.13.1391","E6.12.1288") selgene("EGR1") selgene("MYB") selgene("TERT") selgene("C21orf33") selgene("KAT2A") selgene("RBPJ") selgene("SEMA4A") selgene("MAX") selgene("NCOR1") selgene("JAK2")
-Optimization: -13
-SATISFIABLE
-
-TIME LIMIT   : 1
-Models       : 14+
-  Optimum    : unknown
-Optimization : -13
-Calls        : 1
-Time         : 120.000s (Solving: 119.14s 1st Model: 0.01s Unsat: 0.00s)
-CPU Time     : 119.990s

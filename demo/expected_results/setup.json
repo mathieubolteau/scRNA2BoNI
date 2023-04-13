@@ -1,1 +1,1 @@
-{"stimuli": ["YY1", "EGFR", "STK11", "SMAD3", "JAK1", "PARP1", "HIF1A"], "inhibitors": ["IRF1", "JUN", "FOXA2"], "readouts": ["RNF128", "VEGFA", "EOMES", "TBX21", "HEY1", "GATA3", "ZEB1", "ATF3", "FGF4", "HEY2", "TGFB1", "PDGFRA", "CD4", "MYL1", "SULT2A1"]}
+{"stimuli": ["KAT2A", "RBPJ", "SEMA4A", "MAX", "NCOR1", "JAK2"], "inhibitors": ["EGR1", "MYB", "TERT", "C21orf33"], "readouts": ["CD4", "VEGFA", "HEY2", "EOMES", "RNF128", "MYL1", "TBX21", "FGF4", "PDGFRA", "HEY1", "ZEB1", "GATA3", "SULT2A1", "TGFB1", "ATF3"]}
