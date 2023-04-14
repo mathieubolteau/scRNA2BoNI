@@ -47,12 +47,12 @@ def load_answer_set(filename: str) -> set:
     answer_set_raw = file_list[index]
     answer_set_list = answer_set_raw.split(' ')
     for atom in answer_set_list:
-        if re.search('^selprot', atom):
+        if re.search('^selgene', atom):
             encoded_gene = get_value(atom)[0]
             # gene = genes_hash_map['decode'][encoded_gene]
             gene = encoded_gene
             sel_genes.append(gene)
-        elif re.search('^affinite', atom):
+        elif re.search('^affinity', atom):
             cur_cells = get_value(atom)
             encoded_cell_i = cur_cells[0]
             # cell_i = cells_hash_map['decode'][encoded_cell_i]
@@ -114,21 +114,21 @@ def redundancies_calculation(affinities:dict, selgenes:list, class_names:list, m
         c2 = affinities[i][1]
         redundancy_vectors[i] = list()
         c1_redundancies = get_redundancies(c1, selgenes, c1_class_name, c1_submatrix)
-        redundancy_cells[c1_class_name][i] = c1_redundancies
+        redundancy_cells[c1_class_name][i] = {"redundancies": c1_redundancies, "nb":len(c1_redundancies)}
         c2_redundancies = get_redundancies(c2, selgenes, c2_class_name, c2_submatrix)
-        redundancy_cells[c2_class_name][i] = c2_redundancies
+        redundancy_cells[c2_class_name][i] = {"redundancies": c2_redundancies, "nb":len(c2_redundancies)}
         
         for c1_red in c1_redundancies:
             for c2_red in c2_redundancies:
                 redundancy_vectors[i].append((c1_red, c2_red))
     
     sum_ = 0
-    for values in redundancy_cells[c1_class_name].values():
-        sum_ += len(values)
+    for pseudo_pert in redundancy_cells[c1_class_name].values():
+        sum_ += pseudo_pert["nb"]
     redundancy_cells[c1_class_name]['nb'] = sum_
     sum_ = 0
-    for values in redundancy_cells[c2_class_name].values():
-        sum_ += len(values)
+    for pseudo_pert in redundancy_cells[c2_class_name].values():
+        sum_ += pseudo_pert["nb"]
     redundancy_cells[c2_class_name]['nb'] = sum_
     return redundancy_cells, redundancy_vectors
 
@@ -375,12 +375,12 @@ def run_bns_inference(config):
     # expr_data
     
     # Redundancies calculation 
-    classes = list()
-    for c in affinities[0]:
-        classes.append(get_cell_class(c, expr_data))
-    classes_cells = get_classes_cells(matrix=expr_data, classes=classes)
+    # classes = list()
+    # for c in affinities[0]:
+    #     classes.append(get_cell_class(c, expr_data))
+    # classes_cells = get_classes_cells(matrix=expr_data, classes=classes)
     # redundancies = redundancies_calculation(affinities=affinities, selgenes=sel_genes, class_names=classes, class_cells=classes_cells,matrix=expr_data)
-    # json.dump(redundancies, open(f'{out_dir}/redundancies.json', 'w'), indent=4, sort_keys=True)
+    # json.dump(redundancies, open(f'{out_dir}/redundancies.jwson', 'w'), indent=4, sort_keys=True)
 
     # Maximization of readouts difference
     json.dump(affinities, open(f"{out_dir}/affinities.json",'w'))
