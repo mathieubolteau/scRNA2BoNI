@@ -30,7 +30,7 @@ dependencies = [
     "jupyter",
     "rdflib",
     "nose2",
-    "pandas",
+    "pandas==1.1",
     "scipy",
     "flask",
     "pydotplus",
