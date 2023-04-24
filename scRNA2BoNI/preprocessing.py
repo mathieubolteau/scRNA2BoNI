@@ -57,9 +57,6 @@ def reduce_and_binarize_matrix(mtx, cell_types_selected, readouts, inputs, inter
     readouts = list(set(mtx.columns.tolist()).intersection(set(readouts)))
     max_expr_value, min_expr_value = get_extrem_expr_values(mtx, readouts, cell_types_selected)
     
-    
-
-
     annotations = mtx.columns[:annotations_len].to_list()
     
     reduced_expr_mtx = mtx.loc[mtx.clusterUmap.isin(cell_types_selected)]
@@ -83,7 +80,6 @@ def encode(to_encode:list)-> dict:
         encoded['decode'][i+1] = to_encode[i]
         encoded['encode'][to_encode[i]] = i+1
     return encoded
-
 
 
 def create_inputs_instance(inputs:list):
@@ -116,34 +112,16 @@ def create_expression_instance(matrix, readouts, annotations_len):
 
 
 def run_preprocessing(config):
-
     out_dir = config['output_dir']
     cell_types_selected = config['class_types']
 
-
-
-    # matrix = load_data(f"{out_dir}/bin_reduced_matrix.csv")
     matrix = load_data(f"{out_dir}/pkn_gene_reduced_expr_mtx.csv", index_name='Name')
     readouts = read_file(f"{out_dir}/no_successors_in_the_matrix.txt")
     inputs = read_file(f"{out_dir}/no_predecessors_in_the_matrix.txt")
     intermediates = read_file(f"{out_dir}/intermediates_in_the_matrix.txt")
     annotations_len = config['annotation_len']
     bin_reduced_matrix, io_genes_intersectPKN_matrix, readouts_genes_intersectPKN_matrix = reduce_and_binarize_matrix(matrix, cell_types_selected, readouts, inputs, intermediates, annotations_len)
-    # bin_reduced_matrix = bin_reduced_matrix.set_index('Name')
     bin_reduced_matrix.to_csv(f'{out_dir}/bin_reduced_matrix.csv', index=True)
-    # list_to_file(io_genes_intersectPKN_matrix, f'{out_dir}/io_genes_intersectPKN_matrix.txt')
-    # list_to_file(readouts_genes_intersectPKN_matrix, f'{out_dir}/readouts_genes_intersectPKN_matrix.txt')
-
-    # genes_list = matrix.columns[annotations_len:]
-    # genes_hash_map = encode(genes_list)
-    # json.dump(genes_hash_map, open(f"{out_dir}/genes_hash_map.json", "w"), sort_keys=True, indent=4)
-    # cells_list = list(matrix.index.values)
-    # cells_hash_map = encode(cells_list)
-    # json.dump(cells_hash_map, open(f"{out_dir}/cells_hash_map.json", "w"), sort_keys=True, indent=4)
-    # classes_list = config['class_types']
-    # classes_hash_map = encode(classes_list)
-    # json.dump(classes_hash_map, open(f"{out_dir}/classes_hash_map.json", "w"), sort_keys=True, indent=4)
-
 
     inputs_instance = create_inputs_instance(inputs)
 

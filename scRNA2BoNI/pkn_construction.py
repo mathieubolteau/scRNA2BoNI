@@ -32,8 +32,6 @@ def format_args(args:dict) -> dict:
     formated_args['md'] = int(args['max_depth'])
     formated_args['endpoint'] = args['endpoint']
     formated_args['excl'] = str()
-    # for db in args['exclude_databases']:
-        # formated_args['excl'] += f'{db.lower()} '
     formated_args['excl'] = args['exclude_databases']
     formated_args['s'] = True if args['extend_with_synonyms'] else False
     formated_args['su'] = True if args['extend_with_rna_protein_suffixes'] else False
@@ -53,8 +51,6 @@ def format_args(args:dict) -> dict:
 
 
 def run_pybravo(args):
-    
-
     # Copy the input genes file
     src_ = args['inputs_genes_file']
     target = f"{args['output_dir']}/input_genes_list.txt"

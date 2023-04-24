@@ -21,10 +21,7 @@ def SIF_to_digraph(filename:str) -> nx.DiGraph:
             G.add_node(source)
             G.add_node(target)
             G.add_edge(source, target, label=edge_type)
-            # raw_data.append(row)
-            # if row[0] not in genes_list: genes_list.append(row[0])
-            # if row[2] not in genes_list: genes_list.append(row[2])
-    return G
+            return G
 
 def get_genes(sif_file):
 
@@ -173,9 +170,6 @@ def reduce_expr_matrix(gene_expr_mtx_file: pd.DataFrame, genes_list:list, sif_co
     annotation_columns = list(expr_mtx.columns[:annotation_len])
     to_keep = annotation_columns+to_keep
     reduced_expr_mtx = expr_mtx[to_keep]
-    # to_keep = annotation_columns+perfect_matchs
-    # perfect_matchs_reduced_mtx = expr_mtx[to_keep]
-    # perfect_matchs_reduced_mtx = perfect_matchs_reduced_mtx.set_index('Name')
     return (reduced_expr_mtx, not_in_expr_mtx, almost_in_expr_mtx, modifications, modified_sif_content)
 
 
@@ -207,15 +201,6 @@ def plot(data, out_dir):
 
     stop = 0
     for gene in data.columns[5:]: # Skip the 5 firsts columns to have only genes
-    # for gene in WGCNA_GS_LIST:
-        # if stop==10:
-        #     break
-        # stop += 1
-
-
-
-
-        # data = data.loc[(data[gene]> 0.5)]
 
 
         data_TE = data.loc[(data['clusterUmap']=='Morula') | (data['clusterUmap']=='B1_B2') | (data['clusterUmap']=='early_TE') | (data['clusterUmap']=='medium_TE') | (data['clusterUmap']=='late_TE')]
@@ -375,9 +360,6 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     # Reduce pkn
     reduced_pkn, deleted_inputs = reduce_pkn(modified_sif_content, list(reduced_expr_mtx.columns))
     save_to_file(reduced_pkn, out_dir+'reduced_pkn.sif')
-    # perfect_matchs_reduced_pkn, perfect_matchs_deleted_inputs = reduce_pkn(sif_content, list(perfect_matchs_reduced_mtx.columns))
-    # save_to_file(perfect_matchs_reduced_pkn, out_dir+'perfect_matchs/reduced_pkn.sif')
-
 
     with open(analyze_out_dir+"input_genes_not_in_the_pkn.txt", "w") as outfile:
             for item in input_genes_not_in_the_pkn:
@@ -421,18 +403,8 @@ if __name__ == '__main__':
     out_dir = argv[2]
     gene_expr_mtx_file = argv[3]
     input_genes_file = argv[4]
-    # no_predecessors_file = argv[5]
-    # no_successors_file = argv[6]
 
     input_genes_list = read_file(input_genes_file)
-    # no_predecessors = open(no_predecessors_file,'r').read().splitlines()
-    # no_successors = open(no_successors_file,'r').read().splitlines()
-
-    # EXP_NAME = 'Test_two_firsts_md3_fa'
-
-    # sif_file = f'/home/e21g017n/Documents/work/Tools/pyBRAvo/MB_Test/{EXP_NAME}/-unified.sif'
-
-    # gene_expr_mtx_file = '/home/e21g017n/Nextcloud/work/scRNASeq_data/data_analyze/data.zip'    
 
     if out_dir[-1:] != '/': out_dir += '/'
 
@@ -443,9 +415,6 @@ if __name__ == '__main__':
 
     out_linreg = 'analyze_lingreg.json'
 
-
-
-    #print('--- Memory foot print cache ---')
     index_std, index_syn = init_gene_synonyms_cache()
 
     raw_data, genes_list = get_genes(sif_file)
