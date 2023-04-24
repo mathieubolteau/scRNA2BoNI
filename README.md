@@ -3,7 +3,7 @@
 scRNA2BoNI is a general framework to infer Boolean networks from scRNAseq data.
 
 
-![scRNA2BoNI_framework](scRNA2BoNI_framework.png)
+![scRNA2BoNI_framework](scRNA2BoNI_framework.jpg)
 
 The framework searches to compute families of Boolean networks that are compatible with scRNAseq data and with prior regulatory knowledge. It is composed of three main steps:
 1. The PKN reconstruction.
