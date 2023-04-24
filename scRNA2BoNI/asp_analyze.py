@@ -38,13 +38,8 @@ def get_no_successors(encoding):
         return no_successors
 
 def get_complexes(encoding):
-
-
-    # TODO : fix the import of 'get_complexes.lp' file.
     instance_path = pkg_resources.resource_filename(__name__, 'data/pkn_construction/get_complexes.lp')
     
-    print("FKSDHGLKSIDGHLSDIHGSDLIGHDSL")
-    print(instance_path)# instance_path = '/home/e21g017n/Nextcloud/work/gitlab_repos/pipeline/pipeline/data/pkn_construction/get_complexes.lp'
     answers = clyngor.solve(instance_path, inline=encoding)
     for answer in answers.by_predicate.first_arg_only:
         complexes = list(answer['complexes'])
@@ -94,10 +89,6 @@ def run_asp_analyze(sif_file:str, matrix_filename:str, out_dir:str):
     if not os.path.exists(f'{out_dir}/visu_cys'): os.makedirs(f'{out_dir}/visu_cys')
 
     encoding = sif2lp(f'{out_dir}/reduced_pkn.sif')
-    # perfect_encoding = sif2lp(f'{out_dir}/perfect_matchs/reduced_pkn.sif')
-
-
-
     to_file(encoding, f'{out_dir}/pkn.lp')
     nodes = get_nodes(encoding)
     no_predecessors = get_no_predecessors(encoding)
