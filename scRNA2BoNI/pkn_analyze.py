@@ -444,8 +444,6 @@ if __name__ == '__main__':
     out_linreg = 'analyze_lingreg.json'
 
 
-
-    #print('--- Memory foot print cache ---')
     index_std, index_syn = init_gene_synonyms_cache()
 
     raw_data, genes_list = get_genes(sif_file)

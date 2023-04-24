@@ -14,7 +14,6 @@ try:
     import matplotlib.pyplot as plt
 
     from .utils import load_data, read_file, get_cell_class
-    # from caspo.caspo.console.handlers
     from caspo.console.handlers import learn_handler, classify_handler, visualize_handler
 
 
@@ -49,22 +48,15 @@ def load_answer_set(filename: str) -> set:
     for atom in answer_set_list:
         if re.search('^selgene', atom):
             encoded_gene = get_value(atom)[0]
-            # gene = genes_hash_map['decode'][encoded_gene]
             gene = encoded_gene
             sel_genes.append(gene)
         elif re.search('^affinity', atom):
             cur_cells = get_value(atom)
             encoded_cell_i = cur_cells[0]
-            # cell_i = cells_hash_map['decode'][encoded_cell_i]
             cell_i = encoded_cell_i
             encoded_cell_j = cur_cells[1]
-            # cell_j = cells_hash_map['decode'][encoded_cell_j]
             cell_j = encoded_cell_j
             affinities.append([cell_i, cell_j])
-            # if cell_i in affinities.keys():
-            #     affinities[cell_i].append(cell_j)
-            # else:
-            #     affinities[cell_i] = [cell_j]
             
 
     return sel_genes, affinities
@@ -105,7 +97,6 @@ def redundancies_calculation(affinities:dict, selgenes:list, class_names:list, m
     }
     redundancy_vectors = {}
     c1_class_name = class_names[0]
-    print(matrix)
     c1_submatrix = matrix[matrix['clusterUmap']==c1_class_name]
 
     c2_class_name = class_names[1]
@@ -134,31 +125,6 @@ def redundancies_calculation(affinities:dict, selgenes:list, class_names:list, m
     return redundancy_cells, redundancy_vectors
 
 
-    # for aff_class, aff_cells in affinities.items():
-    #     for aff_cell in aff_cells:
-    #         aff_expr = get_expr_vector(aff_cell, selgenes, matrix)
-    #         for red_cell in class_cells[aff_class]:
-    #             red_expr = get_expr_vector(red_cell, selgenes, matrix)
-    #             if aff_expr == red_expr:
-    #                 redundancies[aff_class]['redundancies'].append(red_cell)
-    #     redundancies[aff_class]['nb'] = len(redundancies[aff_class]['redundancies'])
-    # return redundancies
-
-# def duplications_calculation(affinities:dict, selgenes:list, matrix:pd.DataFrame) -> dict:
-#     duplications = dict()
-#     aff_i_list = list(affinities.keys())
-#     for aff in aff_i_list:
-#         duplications[aff] = {
-#             'to_treat':True,
-#             'duplications': [aff]
-#         }
-#     for i in aff_i_list[:-1]:
-#         for j in aff_i_list[1:]:
-#             if get_expr_vector(i, selgenes, matrix) == get_expr_vector(j, selgenes, matrix) and duplications[i]['to_treat']==True:
-#                 duplications[i]["duplications"].append(j)
-#                 duplications[j]["to_treat"] = False
-#     return duplications
-
 
 def readouts_diff_calculation(aff_i, aff_j, readouts, matrix) -> float:
     aff_i_vector = get_expr_vector(aff_i,readouts, matrix)
@@ -182,47 +148,9 @@ def readouts_maximization(redundancy_vector:dict, readouts:list, matrix:pd.DataF
                 max_idx = idx 
         perturbations.append(redundancy_vector[aff][max_idx])
     return perturbations
-    
-    # for aff_i in affinities.keys():
-    #     readout_diff_max = 0
-    #     i_max = str()
-    #     j_max = str()
-    #     while redundancy_vector[aff_i]['to_treat'] and len(duplications[aff_i]["duplications"]) > 0:
-    #         dupli_aff_i = duplications[aff_i]["duplications"].pop()
-    #         for aff_j in affinities[dupli_aff_i]:
-    #             readout_diff = readouts_diff_calculation(aff_i, aff_j, readouts, matrix)
-    #             if readout_diff > readout_diff_max:
-    #                 readout_diff_max = readout_diff
-    #                 i_max = aff_i
-    #                 j_max = aff_j
-    #         perturbations.append((i_max, j_max))
-    # return perturbations
-
-# def readouts_maximization(affinities) -> list:
-#     perturbations = list()
-#     for c1, c2 in affinities.items():
-#         perturbations.append((c1, c2[0]))
-#     return perturbations
 
 
 def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, input_genes: list, cells: list, out_dir: str, class_name: str, intermediate_genes:list) :
-
-    # # Clean lists # TODO Check if it's really necessary
-    # gene_mtx = set(expr_data.columns)
-    # readout_genes = list(set(readout_genes).intersection(gene_mtx))
-    # ii_genes = list(set(ii_genes).intersection(gene_mtx))
-
-    # print(intermediate_genes)
-    # print(type(intermediate_genes))
-    # # Order inputs and intermediates
-    # ordered_ii_genes = list()
-    # for gene in ii_genes:
-    #     if gene not in intermediate_genes:
-    #         ordered_ii_genes.append(gene)
-    # ordered_ii_genes.sort()
-    # print(intermediate_genes.sort())
-    # ordered_ii_genes += intermediate_genes.sort()
-    
 
     inputs_dict = dict()
     DA_readouts_dict = dict()
@@ -235,14 +163,12 @@ def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, input_genes: 
     for ii_gene in input_genes:
         current_column = list()
         for cell in cells:
-            # idx = expr_data.index[expr_data.index == cell].tolist()[0]
             expr_value = expr_data.at[cell, ii_gene]
             current_column.append(expr_value)
         inputs_dict[f'TR:{ii_gene}'] = current_column+current_column
     for ii_gene in intermediate_genes:
         current_column = list()
         for cell in cells:
-            # idx = expr_data.index[expr_data.index == cell].tolist()[0]
             expr_value = expr_data.at[cell, ii_gene]
             expr_value = 1 if expr_value==0 else 0
             current_column.append(expr_value)
@@ -253,7 +179,6 @@ def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, input_genes: 
 
         current_column = list()
         for cell in cells:
-            # idx = expr_data.index[expr_data['Name'] == cell].tolist()[0]
             current_column.append(expr_data.at[cell, r_gene])
 
         DV_readouts_dict[f'DV:{r_gene}'] = [0 for x in range(class_len)]+current_column
@@ -403,9 +328,6 @@ def timelaps_analyze(directory:str, classes:list, expr_data:pd.DataFrame, out_di
             Y_redundancies_class1.append(red_class1)
             Y_redundancies_class2.append(red_class2)
     
-    print(X)
-    print(Y_affinities)
-    print(Y_redundancies_class1)
 
     # Create Plot
     fig, ax1 = plt.subplots() 
@@ -415,62 +337,35 @@ def timelaps_analyze(directory:str, classes:list, expr_data:pd.DataFrame, out_di
     line1, = ax1.plot(X, Y_affinities, color = '#66c2a5', marker='o', label='Number of affinity') 
     ax1.tick_params(axis ='y') 
 
-
     
     # Adding Twin Axes
 
     ax2 = ax1.twinx() 
-    
     ax1.set_xticks(X)
-    # ax1.set_ylim(0,40)
-    # ax2.set_ylim(0,100)
-
     ax2.set_ylabel('Number of redundancy') 
     line2, = ax2.plot(X, Y_redundancies_class1, color = '#8da0cb', marker='o', label='CLASS 1') 
     line3, = ax2.plot(X, Y_redundancies_class2, color = '#8da0ee', marker='o', label='CLASS 2') 
     ax2.tick_params(axis ='y') 
-
     ax1.legend(handles=[line1, line2, line3])
-    
-    # Show plot
-    # ax1.legend()
-    
-
-    # plt.show()
     plt.savefig(f'{out_dir}/redundancies_two_classes.png')
 
-
-
     # Create Plot
-
     Y_redundancies = [a + b for a, b in zip(Y_redundancies_class1, Y_redundancies_class2)]
     fig, ax1 = plt.subplots() 
     
     ax1.set_xlabel('Time') 
     ax1.set_ylabel('Number of affinity') 
     line1, = ax1.plot(X, Y_affinities, color = '#66c2a5', marker='o', label='Number of affinity') 
-    ax1.tick_params(axis ='y') 
-
-
+    ax1.tick_params(axis ='y')
     
     # Adding Twin Axes
 
     ax2 = ax1.twinx() 
-    
     ax1.set_xticks(X)
-    # ax1.set_ylim(0,40)
-    # ax2.set_ylim(0,100)
-
     ax2.set_ylabel('Number of redundancy') 
     line2, = ax2.plot(X, Y_redundancies, color = '#8da0cb', marker='o', label='redundancy') 
     ax2.tick_params(axis ='y') 
-
     ax1.legend(handles=[line1, line2])
-    
-    # Show plot
-    # ax1.legend()
-
-    # plt.show()
     plt.savefig(f'{out_dir}/redundancies_merged_classes.png')
 
 
@@ -482,74 +377,41 @@ def run_bns_inference(config):
     classes = config['class_types']
     matrix_filename = f"{out_dir}/bin_reduced_matrix.csv"
 
-    # genes_hash_map = json.load(open(f'{out_dir}/genes_hash_map.json'))
-    # cells_hash_map = json.load(open(f'{out_dir}/cells_hash_map.json'))
-    # classes_hash_map = json.load(open(f'{out_dir}/classes_hash_map.json'))
-
-    # genes_hash_map = ''
-    # cells_hash_map = ''
-    # classes_hash_map = ''
-
     expr_data = load_data(matrix_filename, index_name='Name')
-
-    # timelaps_analyze(f'{out_dir}/timelaps', classes, expr_data, out_dir)
-
-
     answer_set_filename = f"{out_dir}/pseudo_perturbation_answer_sets.txt"
     sel_genes, affinities = load_answer_set(answer_set_filename)
 
     input_genes_in_the_matrix = read_file(f"{out_dir}/no_predecessors_in_the_matrix.txt")
     intermediate_genes_in_the_matrix = read_file(f"{out_dir}/intermediates_in_the_matrix.txt")
     readout_genes = read_file(f"{out_dir}/no_successors_in_the_matrix.txt")
-    # expr_data
 
-    # gene_mtx = set(expr_data.columns)
-    # input_genes_in_the_matrix = list(set(input_genes).intersection(gene_mtx))
-    # intermediate_genes_in_the_matrix = list(set(intermediate_genes).intersection(gene_mtx))
-    # readout_genes_in_the_matrix = list(set(readout_genes).intersection(gene_mtx))
-    
     # Exclude gene not in the matrix
     input_genes = list(set(sel_genes).intersection(input_genes_in_the_matrix))
     intermediate_genes = list(set(sel_genes).intersection(intermediate_genes_in_the_matrix))
-
     input_genes.sort()
     intermediate_genes.sort()
     readout_genes.sort()
     
-
-    print(input_genes)
-    print(intermediate_genes)
-    print(readout_genes)
-
     # Redundancies calculation 
     classes = list()
     for c in affinities[0]:
         classes.append(get_cell_class(c, expr_data))
     classes_cells = get_classes_cells(matrix=expr_data, classes=classes)
-    # redundancies = redundancies_calculation(affinities=affinities, selgenes=sel_genes, class_names=classes, class_cells=classes_cells,matrix=expr_data)
-    # json.dump(redundancies, open(f'{out_dir}/redundancies.json', 'w'), indent=4, sort_keys=True)
 
     # Maximization of readouts difference
     json.dump(affinities, open(f"{out_dir}/affinities.json",'w'))
     
     redondancy_cells, redondancy_vectors = redundancies_calculation(affinities, sel_genes, classes, expr_data)
-        # duplications = duplications_calculation(affinities=affinities, selgenes=sel_genes, matrix=expr_data)
     json.dump(redondancy_cells, open(f"{out_dir}/redondancy_cells.json",'w'))
     json.dump(redondancy_vectors, open(f"{out_dir}/redondancy_vectors.json",'w'))
     perturbations = readouts_maximization(redondancy_vectors, readout_genes, expr_data)
-    # perturbations = affinities
     json.dump(perturbations, open(f"{out_dir}/perturbations.json",'w'))
-
-
-    print(intermediate_genes)
 
     # Preprocessing step
     for i  in range(len(classes)):
         class_ = classes[i]
         if not os.path.exists(f'{out_dir}/{class_}'): os.makedirs(f'{out_dir}/{class_}')
-        # TO TREAT !!!
         curent_cells = [item[i] for item in perturbations] 
-        # curent_cells = [item[i] for item in affinities]
         create_midas_file(input_genes=input_genes, expr_data=expr_data, cells=curent_cells,
                         readout_genes=readout_genes, out_dir=out_dir, class_name=class_, intermediate_genes=intermediate_genes)
     

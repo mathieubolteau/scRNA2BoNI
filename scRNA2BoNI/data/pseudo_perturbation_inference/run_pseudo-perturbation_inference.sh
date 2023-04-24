@@ -4,8 +4,6 @@ make_copy () {
     to_copy=${out_dir}/pseudo_perturbation_answer_sets.txt
     while  [[ ! $(tail -n 1 $to_copy) =~ ^CPU.* ]]
     do
-        echo $(($i*$1))
-        # sleep $(($1*60));
         sleep $(($1));
         cp ${to_copy} ${out_dir}/timelaps/$(($i*$1)).out
         ((i++))
@@ -24,7 +22,6 @@ intermediates_instance_filename=$8
 problem_instance=$9
 time_point=${10}
 
-echo "RUN PSEUDO SH"
 
 mkdir ${out_dir}/timelaps
 

@@ -1,4 +1,4 @@
-# scRNA2BoNI - scRNAseq data to BOolean Network Inference
+# scRNA2BoNI - scRNAseq data to Boolean Network Inference
 
 scRNA2BoNI is a general framework to infer Boolean networks from scRNAseq data.
 
@@ -33,7 +33,7 @@ scRNABoNI only works under Python 3.8. Two submodules, included in the scRNA2BoN
     pip install ./scRNA2BoNI/pyBRAvo/.                 # Install pyBRAvo 
     pip install -r ./scRNA2BoNI/caspo/requirements.txt # Install Caspo requirements
     pip install ./scRNA2BoNI/caspo/.                   # Install Caspo
-    pip install .                           # Install scRNA2BoNI
+    pip install .                                      # Install scRNA2BoNI
     ```
 6. Verify that scRNA2BoNI is installed
     * `scRNA2BoNI --help` 
