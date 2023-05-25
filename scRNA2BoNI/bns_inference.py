@@ -182,26 +182,25 @@ def readouts_maximization(redundancy_vector:dict, readouts:list, matrix:pd.DataF
         perturbations.append(redundancy_vector[aff][max_idx])
     return perturbations
     
-    # for aff_i in affinities.keys():
-    #     readout_diff_max = 0
-    #     i_max = str()
-    #     j_max = str()
-    #     while redundancy_vector[aff_i]['to_treat'] and len(duplications[aff_i]["duplications"]) > 0:
-    #         dupli_aff_i = duplications[aff_i]["duplications"].pop()
-    #         for aff_j in affinities[dupli_aff_i]:
-    #             readout_diff = readouts_diff_calculation(aff_i, aff_j, readouts, matrix)
-    #             if readout_diff > readout_diff_max:
-    #                 readout_diff_max = readout_diff
-    #                 i_max = aff_i
-    #                 j_max = aff_j
-    #         perturbations.append((i_max, j_max))
-    # return perturbations
 
-# def readouts_maximization(affinities) -> list:
-#     perturbations = list()
-#     for c1, c2 in affinities.items():
-#         perturbations.append((c1, c2[0]))
-#     return perturbations
+def readouts_mean(redundancy_vector:dict, readouts:list, matrix:pd.DataFrame) -> list:
+    readouts_i = dict()
+    readouts_j = dict()
+    mean_i = 0
+    mean_j = 0
+    for r_gene in readouts:
+        readouts_i[r_gene] = list()
+        readouts_j[r_gene] = list()
+        for aff in range(len(redundancy_vector)):
+            redundancies_nb = len(redundancy_vector[aff])
+            for red in redundancy_vector[aff]:
+                mean_i += matrix.at[red[0], r_gene]
+                mean_j += matrix.at[red[1], r_gene]
+            readouts_i[r_gene].append(mean_i/redundancies_nb)
+            readouts_j[r_gene].append(mean_j/redundancies_nb)
+            
+    return readouts_i, readouts_j
+
 
 
 def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, ii_genes: list, cells: list, out_dir: str, class_name: str, intermediate_genes:list) :
@@ -246,6 +245,67 @@ def create_midas_file(expr_data: pd.DataFrame, readout_genes: str, ii_genes: lis
     DA_readouts_df = pd.DataFrame(DA_readouts_dict)
     DV_readouts_df = pd.DataFrame(DV_readouts_dict)
 
+    # concatenate the 3 dataframe
+    midas_df = pd.concat([inputs_df, DA_readouts_df, DV_readouts_df], axis=1)
+    midas_df.to_csv(f'{out_dir}/{class_name}_midas.csv', index=False)
+ 
+def MinMaxNormalization(df):
+    min_val = df.min().min()
+    max_val = df.max().max()
+    print(min_val, max_val)
+    normalized_df = (df - min_val) / (max_val - min_val)
+    normalized_df.to_csv('./DFFFF_TODEL.csv')
+    df.to_csv('./DF_TODEL.csv')
+    return normalized_df
+
+def create_midas_file2(expr_data: pd.DataFrame, readout_genes: str, ii_genes: list, cells: list, out_dir: str, class_name: str, intermediate_genes:list, curent_readout_values:list) :
+
+    # Clean lists # TODO Check if it's really necessary
+    gene_mtx = set(expr_data.columns)
+    readout_genes = list(set(readout_genes).intersection(gene_mtx))
+    ii_genes = list(set(ii_genes).intersection(gene_mtx))
+
+
+
+    inputs_dict = dict()
+    DA_readouts_dict = dict()
+    DV_readouts_dict = dict()
+
+    class_len = len(cells)
+
+    inputs_dict[f'TR:{class_name}:CellLine'] = [1 for x in range(class_len*2)]
+
+    for ii_gene in ii_genes:
+        current_column = list()
+        for cell in cells:
+            # idx = expr_data.index[expr_data.index == cell].tolist()[0]
+            expr_value = expr_data.at[cell, ii_gene]
+            # if intermediates genes (stimuli for caspo) reverse the expression value
+            if ii_gene in intermediate_genes:
+                expr_value = 1 if expr_value==0 else 0
+            current_column.append(expr_value)
+        inputs_dict[f'TR:{ii_gene}'] = current_column+current_column
+
+    for r_gene in readout_genes:
+        DA_readouts_dict[f'DA:{r_gene}'] = [0 for x in range(class_len)]+[10 for x in range(class_len)]
+
+        # current_column = list()
+        # for readout_val in curent_readout_values:
+        #     # idx = expr_data.index[expr_data['Name'] == cell].tolist()[0]
+        #     current_column.append(expr_data.at[cell, r_gene])
+
+        DV_readouts_dict[f'DV:{r_gene}'] = [0 for x in range(class_len)]+curent_readout_values[r_gene]
+
+    inputs_df = pd.DataFrame(inputs_dict)
+    DA_readouts_df = pd.DataFrame(DA_readouts_dict)
+    DV_readouts_df = pd.DataFrame(DV_readouts_dict)
+    print(DV_readouts_df)
+
+    DV_readouts_df = MinMaxNormalization(DV_readouts_df)
+
+    print("++++++++++++++++++++++++++")
+    print(DV_readouts_df)
+    print("===============================")
     # concatenate the 3 dataframe
     midas_df = pd.concat([inputs_df, DA_readouts_df, DV_readouts_df], axis=1)
     midas_df.to_csv(f'{out_dir}/{class_name}_midas.csv', index=False)
@@ -389,9 +449,9 @@ def run_bns_inference(config):
         # duplications = duplications_calculation(affinities=affinities, selgenes=sel_genes, matrix=expr_data)
     json.dump(redondancy_cells, open(f"{out_dir}/redondancy_cells.json",'w'))
     json.dump(redondancy_vectors, open(f"{out_dir}/redondancy_vectors.json",'w'))
-    perturbations = readouts_maximization(redondancy_vectors, readout_genes, expr_data)
+    readouts = readouts_mean(redondancy_vectors, readout_genes, expr_data)
     # perturbations = affinities
-    json.dump(perturbations, open(f"{out_dir}/perturbations.json",'w'))
+    # json.dump(perturbations, open(f"{out_dir}/perturbations.json",'w'))
 
 
 
@@ -400,10 +460,12 @@ def run_bns_inference(config):
         class_ = classes[i]
         if not os.path.exists(f'{out_dir}/{class_}'): os.makedirs(f'{out_dir}/{class_}')
         # TO TREAT !!!
-        curent_cells = [item[i] for item in perturbations] 
-        # curent_cells = [item[i] for item in affinities]
-        create_midas_file(ii_genes=sel_genes, expr_data=expr_data, cells=curent_cells,
-                        readout_genes=readout_genes, out_dir=out_dir, class_name=class_, intermediate_genes=intermediate_genes)
+        # curent_cells = [item[i] for item in perturbations] 
+        curent_cells = [item[i] for item in affinities]
+        curent_readout_values = readouts[i]
+        create_midas_file2(ii_genes=sel_genes, expr_data=expr_data, cells=curent_cells,
+                        readout_genes=readout_genes, out_dir=out_dir, class_name=class_, intermediate_genes=intermediate_genes, 
+                        curent_readout_values=curent_readout_values)
     
     transform_sif_file(out_dir)
     create_setup_file(sel_genes, readout_genes, input_genes, intermediate_genes, out_dir)
