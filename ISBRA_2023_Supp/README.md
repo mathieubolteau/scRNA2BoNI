@@ -35,7 +35,7 @@ Here, we provide the scRNAseq data as an expression matrix. The first matrix (`s
 ## `supplementary_material` folder
 We provide supplementary methods and results complementary to the main paper.
 
-## Contact
+## Contact
 
 Mathieu Bolteau 
 * [@mathieubolteau](https://github.com/mathieubolteau)
