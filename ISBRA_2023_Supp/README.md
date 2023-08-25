@@ -1,10 +1,8 @@
-# Bolteau et al. ISBRA 2023 Supplementary Material
+# Supplementary Material: Inferring Boolean Networks from Single-Cell Human Embryo Datasets
 
-This folder contains supplementary information for the paper "Inferring Boolean networks from single-cell human embryo datasets: proof of concept with trophectoderm maturation" submitted for the ISBRA 2023 conference.
+This folder contains supplementary information for the paper "Inferring Boolean networks from single-cell human embryo datasets" of ISBRA 2023 conference.
 
 
-## `algorithm` folder
-Here, we provide an introduction of Answer-Set Programming (ASP) and the explaination line by line of the program implemented to maximize the number of pseudo-perturbations.
 
 ## `figs` folder
 In this folder, we provide the figures present in the paper.
@@ -30,9 +28,16 @@ trophectoderm stages. We divide the folder into three subfolders,  each correspo
 ### Raw results
 - Method raw results archive
 
-### Used parameters
-- PDF containing the used parameters for repeatability purposes
-
 ## `scRNAseq_data` folder
 
 Here, we provide the scRNAseq data as an expression matrix. The first matrix (`scRNAseq_data.zip`) is the initial matrix composed of the four datasets from Meistermann et al. The second one (`Petropoulos2016_scRNAseq_data.zip`) is only composed of the Petropoulos2016 dataset. The latter was used for the paper.
+
+## `supplementary_material` folder
+We provide supplementary methods and results complementary to the main paper.
+
+## Contact
+
+Mathieu Bolteau 
+* [@mathieubolteau](https://github.com/mathieubolteau)
+* [mathieu.bolteau@ls2n.fr](mailto:mathieu.bolteau@ls2n.fr)
+* Nantes Université, Ecole Centrale Nantes, CNRS, LS2N, UMR 6004, F-44000, Nantes
