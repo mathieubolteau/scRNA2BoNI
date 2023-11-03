@@ -62,7 +62,10 @@ def replace_in_sif(old_gene:str, new_gene:str, sif_content:str):
         # sif_content = sif_content.replace('\t'+old_gene, '\t'+new_gene)
         return sif_content
 
-def read_sif(sif:str) -> list:
+def read_sif(sif: str) -> list:
+    """
+    Parses a SIF (Simple Interaction Format) string and returns a list of edges with signs.
+    """
     edges = list()
     sif_content_list = sif.split("\n")
     # Remove last empty line
@@ -72,7 +75,71 @@ def read_sif(sif:str) -> list:
         edges.append((source, target, {'sign': sign}))
     return edges
 
-def reduce_pkn(pkn_content:str, matrix_genes:list) -> str:
+def identify_nodes(graph: nx.DiGraph) -> tuple:
+    """
+    Identifies input nodes, readout nodes, and complexes in the given graph.
+    """
+    inputs = set()
+    readouts = set()
+
+    for node in graph.nodes:
+        if graph.in_degree(node) == 0:
+            inputs.add(node)
+        elif graph.out_degree(node) == 0:
+            readouts.add(node)
+    complexes = {out for _, out, sign in graph.edges.data('sign') if sign == 'PART_OF'}
+    return inputs, readouts, complexes
+
+def are_all_successors_in_list(node: str, successors_list: list, graph: nx.DiGraph) -> bool:
+    """
+    Checks if all successors of a node are present in the given list.
+    """
+    return all(successor in successors_list for successor in graph.successors(node))
+
+def are_all_predecessors_in_list(node: str, predecessors_list: list, graph: nx.DiGraph) -> bool:
+    """
+    Checks if all predecessors of a node are present in the given list.
+    """
+    return all(predecessor in predecessors_list for predecessor in graph.predecessors(node))
+
+
+
+def reduce_pkn(pkn_content: str, matrix_genes: list) -> tuple:
+    """
+    Reduces the given PKN content based on a list of matrix genes.
+    """
+    reduced_pkn_content = str()
+    graph = nx.DiGraph(read_sif(pkn_content))
+    
+    to_keep = [n for n in graph.nodes if n in matrix_genes]
+
+    complexes = list()
+    # Remove complexes if their successors are not in the expression matrix
+    for in_, out, sign in graph.edges.data('sign'):
+        if sign == 'PART_OF':
+            for succ in graph.successors(out):
+                if succ in to_keep and out not in complexes:
+                        complexes.append(out) 
+ 
+    reduced_graph = graph.subgraph(to_keep+complexes)
+    reduced_graph = reduced_graph.copy()
+    inputs, readouts, _ = identify_nodes(reduced_graph)
+    edges_to_remove = list()
+
+    for in_, out, sign in reduced_graph.edges.data('sign'):
+        if  (in_ in inputs and out in readouts) or \
+            (in_ in inputs and out in complexes and are_all_successors_in_list(out, readouts, reduced_graph)) or \
+            (in_ in complexes and out in readouts and are_all_predecessors_in_list(in_, inputs, reduced_graph)):
+            edges_to_remove.append((in_, sign, out)) 
+    for in_, _, out in edges_to_remove:
+        reduced_graph.remove_edge(in_, out)
+
+    for in_, out, sign in reduced_graph.edges.data('sign'):
+        reduced_pkn_content += f'{in_}\t{sign}\t{out}\n'
+    return reduced_pkn_content, edges_to_remove
+
+
+def old_reduce_pkn(pkn_content:str, matrix_genes:list) -> str:
     reduced_pkn_content = str()
     graph = nx.DiGraph(read_sif(pkn_content))
     nodes = graph.nodes
@@ -373,7 +440,7 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     modified_sif_content = remove_unknown_edges(modified_sif_content)
 
     # Reduce pkn
-    reduced_pkn, deleted_inputs = reduce_pkn(modified_sif_content, list(reduced_expr_mtx.columns))
+    reduced_pkn, removed_edges  = reduce_pkn(modified_sif_content, list(reduced_expr_mtx.columns))
     save_to_file(reduced_pkn, out_dir+'reduced_pkn.sif')
     # perfect_matchs_reduced_pkn, perfect_matchs_deleted_inputs = reduce_pkn(sif_content, list(perfect_matchs_reduced_mtx.columns))
     # save_to_file(perfect_matchs_reduced_pkn, out_dir+'perfect_matchs/reduced_pkn.sif')
@@ -388,8 +455,8 @@ def run_pkn_analyze(sif_file:str, out_dir:str, gene_expr_mtx_file:str, input_gen
     with open(analyze_out_dir+"genes_almost_in_expr_mtx.txt", "w") as outfile:
             for item in genes_almost_in_expr_mtx:
                 outfile.write("{}\n".format(item))
-    with open(analyze_out_dir+"deleted_inputs_from_the_pkn.txt", "w") as outfile:
-                for item in deleted_inputs:
+    with open(analyze_out_dir+"removed_edges_from_the_pkn.txt", "w") as outfile:
+                for item in removed_edges:
                     outfile.write("{}\n".format(item))
     # with open(analyze_out_dir+"perfect_matchs_deleted_inputs_from_the_pkn.txt", "w") as outfile:
     #             for item in perfect_matchs_deleted_inputs:
