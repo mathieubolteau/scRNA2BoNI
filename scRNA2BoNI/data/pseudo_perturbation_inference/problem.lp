@@ -15,6 +15,7 @@
 {selinter(G): intermediate(G)} = k-i.
 
 1{selinput(G)  : parent(G,I), input(G)} :- selinter(I).
+1{selinter(I)  : parent(G,I), intermediate(I)} :- selgene(G).
 
 % Generate the corresponding perturbation vectors
 selpert(E,V,S,C) :- selinput(V), pert(E,V,S,C).
